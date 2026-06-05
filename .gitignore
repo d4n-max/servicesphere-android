@@ -1,0 +1,48 @@
+# Android / Gradle
+.gradle/
+build/
+*/build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Signing / secrets
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+keystore.properties
+signing.properties
+secrets.properties
+.env
+.env.*
+# Firebase config can be public in some projects and sensitive in others.
+# Decide manually before committing google-services.json.
+# google-services.json
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated / local files
+app/release/
+app/debug/
+exports/
+pdfs/
+job_photos/
+signatures/
+
+# Root-level local QA artifacts
+/*.png
+/*.xml
+/*.json

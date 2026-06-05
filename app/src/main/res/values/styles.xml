@@ -1,0 +1,13 @@
+<resources>
+    <style name="Theme.ServiceSphere" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/primary</item>
+    </style>
+
+    <style name="Theme.ServiceSphere.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/primary</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/servicesphere_icon</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/primary</item>
+        <item name="postSplashScreenTheme">@style/Theme.ServiceSphere</item>
+    </style>
+</resources>

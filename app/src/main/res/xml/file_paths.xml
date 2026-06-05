@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <cache-path name="camera_cache" path="camera/" />
+    <files-path name="job_photos" path="job_photos/" />
+    <files-path name="pdfs" path="pdfs/" />
+    <files-path name="signatures" path="signatures/" />
+    <files-path name="business" path="business/" />
+    <files-path name="exports" path="exports/" />
+    <external-files-path name="external_job_photos" path="Pictures/job_photos/" />
+    <external-files-path name="external_pdfs" path="Documents/servicesphere_pdfs/" />
+</paths>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ServiceSphere - Jobs</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline-variant": "#ccc3d8",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary": "#474e60",
+                        "on-primary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-dim": "#d8dadc",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#4e45d5",
+                        "inverse-surface": "#2d3133",
+                        "outline": "#7b7487",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1e",
+                        "on-tertiary-fixed-variant": "#404758",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-container": "#ede0ff",
+                        "on-secondary-fixed-variant": "#372abf",
+                        "on-error-container": "#93000a",
+                        "surface": "#f7f9fb",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-fixed": "#eaddff",
+                        "tertiary-fixed-dim": "#c0c6db",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-tertiary-container": "#dfe5fa",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "on-surface-variant": "#4a4455",
+                        "secondary-fixed": "#e3dfff",
+                        "surface-container": "#eceef0",
+                        "on-secondary-container": "#fffbff",
+                        "primary": "#630ed4",
+                        "tertiary-fixed": "#dce2f7",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "inverse-primary": "#d2bbff",
+                        "on-tertiary-fixed": "#141b2b",
+                        "secondary-container": "#6860ef",
+                        "tertiary-container": "#5f6678",
+                        "on-surface": "#191c1e",
+                        "primary-container": "#7c3aed",
+                        "on-primary-fixed": "#25005a",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed": "#100069",
+                        "surface-tint": "#732ee4"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-tablet": "24px",
+                        "margin-mobile": "16px",
+                        "stack-md": "12px",
+                        "stack-lg": "24px",
+                        "stack-sm": "4px"
+                    },
+                    fontFamily: {
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "title-lg": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-lg": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Hide scrollbar for chips */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-[100px] antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface shadow-sm z-40 flex items-center justify-between px-margin-mobile h-16 transition-all duration-300">
+<div class="flex items-center gap-4">
+<button class="p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors active:scale-95 duration-150 text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">ServiceSphere</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container transition-colors active:scale-95 duration-150 text-primary">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A close up portrait of a confident male professional wearing a dark shirt. The background is a blurred bright outdoor setting with soft natural light. The mood is approachable and professional. The image has a clean, modern aesthetic with high contrast and sharp focus on the face." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTmrvIvLCjQHVUkIeYlNBb9M0yyYyHXTQkrwbgDSDOvDEeMy8EFY5bhRTpLPbAGUKiFwOvOYBq-3HBH29VCKhSeek3ga2lDQoOZ8WGLIEHGbIoO3GKBCrgEpKhkj4Js9HZMg8tLTCA_CncrisgTfmK8nXFP2iPusURKCm2ukSpQgeuUWFZ8glELIgHJTEK5RsLzpGFm8M6Nv-ZM1KA6GJANEsrFf_Bpjy1gEx3NafOLAUMhKfQGVUDTMCQgH_tk6-ZLAj_MztWKS2Q"/>
+</button>
+</div>
+</header>
+<!-- Filter Chips -->
+<div class="w-full overflow-x-auto no-scrollbar px-margin-mobile py-4 sticky top-16 bg-background/80 backdrop-blur-md z-30">
+<div class="flex items-center gap-2 w-max">
+<button class="h-8 px-4 rounded-full font-label-lg text-label-lg bg-primary-container text-on-primary-container border border-transparent transition-colors active:scale-95">Today</button>
+<button class="h-8 px-4 rounded-full font-label-lg text-label-lg bg-surface-container text-on-surface-variant border border-outline-variant hover:bg-surface-container-high transition-colors active:scale-95">Upcoming</button>
+<button class="h-8 px-4 rounded-full font-label-lg text-label-lg bg-surface-container text-on-surface-variant border border-outline-variant hover:bg-surface-container-high transition-colors active:scale-95">In Progress</button>
+<button class="h-8 px-4 rounded-full font-label-lg text-label-lg bg-surface-container text-on-surface-variant border border-outline-variant hover:bg-surface-container-high transition-colors active:scale-95">Completed</button>
+<button class="h-8 px-4 rounded-full font-label-lg text-label-lg bg-surface-container text-on-surface-variant border border-outline-variant hover:bg-surface-container-high transition-colors active:scale-95">Unpaid</button>
+</div>
+</div>
+<!-- Main Content: Jobs List -->
+<main class="px-margin-mobile flex flex-col gap-stack-md pb-6 md:grid md:grid-cols-2 md:gap-margin-tablet lg:grid-cols-3 md:px-margin-tablet">
+<!-- Job Card 1 -->
+<article class="relative bg-surface-container-lowest rounded-xl p-[16px] shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-surface-variant overflow-hidden hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-shadow duration-200 cursor-pointer group">
+<!-- Accent Bar -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-xl"></div>
+<div class="flex justify-between items-start mb-3">
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface group-hover:text-primary transition-colors">Acme Corp HQ</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">HVAC Maintenance</p>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm">
+                    In Progress
+                </span>
+</div>
+<div class="flex flex-col gap-2 mt-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span class="font-body-md text-body-md">09:00 AM - 11:30 AM</span>
+</div>
+<div class="flex items-start gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] mt-0.5">location_on</span>
+<span class="font-body-md text-body-md line-clamp-2">1200 Tech Boulevard, Suite 400<br/>San Francisco, CA</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-surface-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden border border-surface">
+<img alt="Assignee" class="w-full h-full object-cover" data-alt="A small circular avatar image showing a professional woman with glasses smiling warmly. The background is a softly blurred office interior. The lighting is natural and even, creating a clean, trustworthy appearance suitable for a SaaS application interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAl20vmnPcepIyvsXhVwuIGe4AlvnZJ8SVG2-qHzwUIzR0cLASp6METbNBdkROZJAQtijs2LGk_rpX5ZGDZV1GguHuP3fmtWd4fQU8_r5qwSWgWgr-d-aBJeZM9TRnTuBsT6IoUO7s-PZ7OMOp-4pdoC4nmpZAExmRzLuzrZrwEk7tidf4-A_7Ppcm-wkfXLFrxT4a1xzRwYwSB0GZm46fi-dhObIiIGjYi9Rbnj1Lot1OU4Zt_cUkGfFUBw4G_ZgWTTaQOpF4E2XZ_"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Sarah J.</span>
+</div>
+<span class="font-title-lg text-title-lg text-primary">$450.00</span>
+</div>
+</article>
+<!-- Job Card 2 -->
+<article class="relative bg-surface-container-lowest rounded-xl p-[16px] shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-surface-variant overflow-hidden hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-shadow duration-200 cursor-pointer group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary rounded-l-xl"></div>
+<div class="flex justify-between items-start mb-3">
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface group-hover:text-primary transition-colors">Residential - Smith</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Plumbing Leak</p>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm">
+                    Upcoming
+                </span>
+</div>
+<div class="flex flex-col gap-2 mt-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span class="font-body-md text-body-md">01:00 PM - 02:00 PM</span>
+</div>
+<div class="flex items-start gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] mt-0.5">location_on</span>
+<span class="font-body-md text-body-md line-clamp-2">844 Willow Lane<br/>Oakland, CA</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-surface-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant border border-surface">
+<span class="material-symbols-outlined text-[14px]">person_add</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Unassigned</span>
+</div>
+<span class="font-title-lg text-title-lg text-on-surface-variant">Est: $120.00</span>
+</div>
+</article>
+<!-- Job Card 3 -->
+<article class="relative bg-surface-container-lowest rounded-xl p-[16px] shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-surface-variant overflow-hidden hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-shadow duration-200 cursor-pointer group opacity-75">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-outline rounded-l-xl"></div>
+<div class="flex justify-between items-start mb-3">
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface group-hover:text-primary transition-colors">Downtown Bistro</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Equipment Install</p>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">
+                    Completed
+                </span>
+</div>
+<div class="flex flex-col gap-2 mt-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span class="font-body-md text-body-md line-through">07:00 AM - 08:30 AM</span>
+</div>
+<div class="flex items-start gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] mt-0.5">location_on</span>
+<span class="font-body-md text-body-md line-clamp-2">55 Market St<br/>San Francisco, CA</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-surface-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden border border-surface">
+<img alt="Assignee" class="w-full h-full object-cover" data-alt="A small circular avatar image showing a confident male professional wearing a dark shirt. The background is a blurred bright outdoor setting with soft natural light. The image has a clean, modern aesthetic suitable for a SaaS list interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuQ7NMKMR-KfTSFv5GcI6GT1oN72kISOcOzutetbGQrNMO3HLqxDXGZODg7quBvjHHre_ZJ_jx2aWzXDNNoRsxEQkqe5VTbDlMrbkhFDbCNJgc-HNHM2ybvtjHJeWkePOvyAw3XFlOzHP53__BOxWxO9V8MM2RkbNrr5L6b04RuhK_RSnY8XEThvgoN3dJtCgPWY_mF0Vm_WcpV32DuiPX9EasDbQcDyG_dMBaAoAkHpHKMv5kLCzDsv-fs2zP3acScFuNd2Q68BBN"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">You</span>
+</div>
+<span class="font-title-lg text-title-lg text-on-surface">$850.00</span>
+</div>
+</article>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-24 right-4 md:right-margin-tablet w-14 h-14 bg-primary text-on-primary rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex items-center justify-center hover:bg-on-primary-fixed-variant hover:shadow-[0_6px_16px_rgba(0,0,0,0.2)] active:scale-95 transition-all duration-200 z-40 group">
+<span class="material-symbols-outlined text-[24px] group-hover:rotate-90 transition-transform duration-300">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface shadow-[0_-2px_4px_rgba(0,0,0,0.05)] md:hidden">
+<div class="flex justify-around items-center h-20 px-2 pb-2">
+<!-- Dashboard (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high active:scale-90 transition-transform duration-200 px-4 py-1 rounded-xl group w-full h-full">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors">dashboard</span>
+<span class="font-label-sm text-label-sm group-hover:text-primary transition-colors">Dashboard</span>
+</button>
+<!-- Jobs (Active) -->
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-transform duration-200 w-16 h-14 relative -top-1">
+<span class="material-symbols-outlined fill-icon mb-1">work</span>
+<span class="font-label-sm text-label-sm mt-0.5" style="font-size: 10px; line-height: 1;">Jobs</span>
+</button>
+<!-- Clients (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high active:scale-90 transition-transform duration-200 px-4 py-1 rounded-xl group w-full h-full">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors">group</span>
+<span class="font-label-sm text-label-sm group-hover:text-primary transition-colors">Clients</span>
+</button>
+<!-- Invoices (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high active:scale-90 transition-transform duration-200 px-4 py-1 rounded-xl group w-full h-full">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors">receipt_long</span>
+<span class="font-label-sm text-label-sm group-hover:text-primary transition-colors">Invoices</span>
+</button>
+</div>
+</nav>
+<!-- SideNav for Web (Hidden on Mobile) -->
+<aside class="hidden md:flex flex-col fixed left-0 top-16 bottom-0 w-[240px] bg-surface border-r border-surface-variant px-3 py-4 z-30">
+<button class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors mb-1 w-full text-left">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-lg text-label-lg">Dashboard</span>
+</button>
+<button class="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary-container text-on-secondary-container transition-colors mb-1 w-full text-left font-medium">
+<span class="material-symbols-outlined fill-icon">work</span>
+<span class="font-label-lg text-label-lg">Jobs</span>
+</button>
+<button class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors mb-1 w-full text-left">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-lg text-label-lg">Clients</span>
+</button>
+<button class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors mb-1 w-full text-left">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-lg text-label-lg">Invoices</span>
+</button>
+</aside>
+<!-- Content Margin Adjuster for Web -->
+<style>
+        @media (min-width: 768px) {
+            main {
+                margin-left: 240px;
+                padding-top: 24px;
+            }
+            .sticky.top-16 {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+        }
+    </style>
+</body></html>

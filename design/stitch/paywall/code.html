@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ServiceSphere Pro Paywall</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#ccc3d8",
+                      "surface-variant": "#e0e3e5",
+                      "tertiary": "#474e60",
+                      "on-primary": "#ffffff",
+                      "background": "#f7f9fb",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-dim": "#d8dadc",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary": "#4e45d5",
+                      "inverse-surface": "#2d3133",
+                      "outline": "#7b7487",
+                      "on-secondary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-background": "#191c1e",
+                      "on-tertiary-fixed-variant": "#404758",
+                      "surface-bright": "#f7f9fb",
+                      "on-primary-container": "#ede0ff",
+                      "on-secondary-fixed-variant": "#372abf",
+                      "on-error-container": "#93000a",
+                      "surface": "#f7f9fb",
+                      "surface-container-high": "#e6e8ea",
+                      "primary-fixed": "#eaddff",
+                      "tertiary-fixed-dim": "#c0c6db",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-tertiary-container": "#dfe5fa",
+                      "error": "#ba1a1a",
+                      "secondary-fixed-dim": "#c3c0ff",
+                      "on-surface-variant": "#4a4455",
+                      "secondary-fixed": "#e3dfff",
+                      "surface-container": "#eceef0",
+                      "on-secondary-container": "#fffbff",
+                      "primary": "#630ed4",
+                      "tertiary-fixed": "#dce2f7",
+                      "on-primary-fixed-variant": "#5a00c6",
+                      "inverse-primary": "#d2bbff",
+                      "on-tertiary-fixed": "#141b2b",
+                      "secondary-container": "#6860ef",
+                      "tertiary-container": "#5f6678",
+                      "on-surface": "#191c1e",
+                      "primary-container": "#7c3aed",
+                      "on-primary-fixed": "#25005a",
+                      "error-container": "#ffdad6",
+                      "primary-fixed-dim": "#d2bbff",
+                      "surface-container-low": "#f2f4f6",
+                      "on-secondary-fixed": "#100069",
+                      "surface-tint": "#732ee4"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "base": "8px",
+                      "margin-tablet": "24px",
+                      "margin-mobile": "16px",
+                      "stack-md": "12px",
+                      "stack-lg": "24px",
+                      "stack-sm": "4px"
+              },
+              "fontFamily": {
+                      "label-lg": ["Plus Jakarta Sans"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "headline-sm": ["Plus Jakarta Sans"],
+                      "label-sm": ["Plus Jakarta Sans"],
+                      "body-md": ["Plus Jakarta Sans"],
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "body-lg": ["Plus Jakarta Sans"],
+                      "title-lg": ["Plus Jakarta Sans"]
+              },
+              "fontSize": {
+                      "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                      "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                      "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                      "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                      "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                      "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                      "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                      "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                      "title-lg": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Ambient Background Gradient for Premium Feel */
+        .premium-bg {
+            background: radial-gradient(120% 120% at 50% -10%, #f7f9fb 0%, #eaddff 40%, #f7f9fb 100%);
+        }
+        
+        /* Glassmorphism utility */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="premium-bg font-body-md text-on-surface h-screen w-full flex flex-col relative overflow-hidden">
+<!-- Top Action Bar (Transactional Flow -> Navigation Suppressed, only Close action) -->
+<header class="flex items-center justify-between px-margin-mobile h-16 w-full z-40 relative">
+<button aria-label="Close" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-lowest shadow-sm text-on-surface hover:bg-surface-container transition-colors active:scale-95">
+<span class="material-symbols-outlined">close</span>
+</button>
+</header>
+<!-- Main Scrollable Canvas -->
+<main class="flex-1 overflow-y-auto px-margin-mobile pb-32 relative z-10">
+<!-- Hero Section -->
+<div class="flex flex-col items-center text-center mt-4 mb-8">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container text-on-primary-container mb-4 shadow-sm">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">ServiceSphere Pro</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface max-w-[280px] mx-auto leading-tight">
+                Run your service business from your phone
+            </h1>
+</div>
+<!-- Bento Grid / Benefits Checklist -->
+<div class="glass-card rounded-xl p-5 mb-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+<h2 class="font-title-lg text-title-lg text-on-surface mb-4">Everything you need to grow</h2>
+<ul class="flex flex-col gap-4">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Unlimited jobs</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Unlimited quotes &amp; invoices</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Remove PDF watermark</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Add business logo</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Capture signatures</span>
+</li>
+</ul>
+</div>
+<!-- Pricing Options -->
+<div class="flex flex-col gap-3 mb-8" id="pricing-container">
+<!-- Yearly Plan (Selected by default) -->
+<div class="pricing-card relative cursor-pointer border-2 border-primary bg-primary-fixed rounded-xl p-4 flex items-center justify-between transition-all duration-200" data-plan="yearly">
+<div class="absolute -top-3 right-4 bg-secondary text-on-secondary px-2 py-0.5 rounded-full font-label-sm text-label-sm shadow-sm">
+                    Save 20%
+                </div>
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center bg-primary text-on-primary radio-indicator">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Yearly</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Billed $144 annually</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-on-surface block">$12</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">/month</span>
+</div>
+</div>
+<!-- Monthly Plan -->
+<div class="pricing-card cursor-pointer border border-outline-variant bg-surface-container-lowest rounded-xl p-4 flex items-center justify-between transition-all duration-200" data-plan="monthly">
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant flex items-center justify-center radio-indicator text-transparent">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Monthly</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Flexible, cancel anytime</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-on-surface block">$15</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">/month</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Bottom CTA Area -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest/90 backdrop-blur-md px-margin-mobile py-4 border-t border-surface-variant z-50">
+<button class="w-full bg-primary text-on-primary py-3.5 rounded-full font-label-lg text-label-lg flex items-center justify-center shadow-[0_4px_12px_rgba(99,14,212,0.3)] hover:bg-on-primary-fixed-variant active:scale-95 transition-all duration-200">
+            Start Pro
+        </button>
+<div class="flex items-center justify-center gap-2 mt-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span class="font-label-sm text-label-sm">Secure payment via Apple / Google Play</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline text-center mt-1">
+            Cancel anytime. Subscription auto-renews.
+        </p>
+</div>
+<!-- Micro-interaction JS for pricing cards -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.pricing-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Reset all cards
+                    cards.forEach(c => {
+                        c.classList.remove('border-2', 'border-primary', 'bg-primary-fixed');
+                        c.classList.add('border', 'border-outline-variant', 'bg-surface-container-lowest');
+                        
+                        const indicator = c.querySelector('.radio-indicator');
+                        indicator.classList.remove('border-primary', 'bg-primary', 'text-on-primary');
+                        indicator.classList.add('border-outline-variant', 'text-transparent');
+                    });
+                    
+                    // Activate clicked card
+                    card.classList.remove('border', 'border-outline-variant', 'bg-surface-container-lowest');
+                    card.classList.add('border-2', 'border-primary', 'bg-primary-fixed');
+                    
+                    const activeIndicator = card.querySelector('.radio-indicator');
+                    activeIndicator.classList.remove('border-outline-variant', 'text-transparent');
+                    activeIndicator.classList.add('border-primary', 'bg-primary', 'text-on-primary');
+                });
+            });
+        });
+    </script>
+</body></html>

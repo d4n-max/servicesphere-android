@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Job Details - ServiceSphere</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#ccc3d8",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary": "#474e60",
+                        "on-primary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-dim": "#d8dadc",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#4e45d5",
+                        "inverse-surface": "#2d3133",
+                        "outline": "#7b7487",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1e",
+                        "on-tertiary-fixed-variant": "#404758",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-container": "#ede0ff",
+                        "on-secondary-fixed-variant": "#372abf",
+                        "on-error-container": "#93000a",
+                        "surface": "#f7f9fb",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-fixed": "#eaddff",
+                        "tertiary-fixed-dim": "#c0c6db",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-tertiary-container": "#dfe5fa",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "on-surface-variant": "#4a4455",
+                        "secondary-fixed": "#e3dfff",
+                        "surface-container": "#eceef0",
+                        "on-secondary-container": "#fffbff",
+                        "primary": "#630ed4",
+                        "tertiary-fixed": "#dce2f7",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "inverse-primary": "#d2bbff",
+                        "on-tertiary-fixed": "#141b2b",
+                        "secondary-container": "#6860ef",
+                        "tertiary-container": "#5f6678",
+                        "on-surface": "#191c1e",
+                        "primary-container": "#7c3aed",
+                        "on-primary-fixed": "#25005a",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed": "#100069",
+                        "surface-tint": "#732ee4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-tablet": "24px",
+                        "margin-mobile": "16px",
+                        "stack-md": "12px",
+                        "stack-lg": "24px",
+                        "stack-sm": "4px"
+                    },
+                    "fontFamily": {
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "title-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-lg": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f7f9fb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Hide scrollbar for clean UI but allow scroll */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased pb-28 md:pb-8 flex flex-col items-center">
+<!-- Task-Focused TopAppBar (Suppressed standard nav for detail view) -->
+<header class="w-full top-0 sticky bg-surface shadow-sm flex items-center justify-between px-margin-mobile h-16 z-40">
+<button aria-label="Go Back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container active:scale-95 duration-150 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Job #1042</h1>
+<button aria-label="More options" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container active:scale-95 duration-150 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-3xl px-margin-mobile py-stack-md flex flex-col gap-stack-md md:gap-stack-lg mt-2">
+<!-- Client Info Card -->
+<section class="bg-surface-container-lowest rounded-xl p-margin-mobile border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-base relative overflow-hidden">
+<!-- Decorative Accent Line -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+<div class="flex items-center justify-between pl-2">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-headline-sm text-headline-sm shrink-0">
+                        EH
+                    </div>
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface">Elena Henderson</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Apex Commercial Properties</p>
+</div>
+</div>
+<div class="flex gap-2">
+<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors active:scale-95" href="tel:+1">
+<span class="material-symbols-outlined icon-fill">call</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors active:scale-95" href="mailto:test@test.com">
+<span class="material-symbols-outlined icon-fill">mail</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Bento Grid: Status & Schedule -->
+<div class="grid grid-cols-2 gap-stack-md">
+<!-- Status Card -->
+<section class="bg-surface-container-lowest rounded-xl p-margin-mobile border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-center items-start gap-stack-sm">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Current Status</span>
+<div class="px-3 py-1.5 rounded-full bg-[#e6f4ea] text-[#137333] font-label-lg text-label-lg flex items-center gap-1.5 inline-flex">
+<span class="material-symbols-outlined text-[16px] icon-fill">autorenew</span>
+                    In Progress
+                </div>
+</section>
+<!-- Schedule Card -->
+<section class="bg-surface-container-lowest rounded-xl p-margin-mobile border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-center items-start gap-stack-sm">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Scheduled For</span>
+<div class="flex flex-col">
+<span class="font-title-lg text-title-lg text-on-surface">Oct 24, 2023</span>
+<span class="font-body-md text-body-md text-on-surface-variant">09:00 AM - 11:30 AM</span>
+</div>
+</section>
+</div>
+<!-- Address & Map Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
+<div class="h-32 w-full bg-surface-container-high relative">
+<!-- Map Placeholder -->
+<img alt="Map showing location in Seattle" class="w-full h-full object-cover opacity-80 mix-blend-multiply" data-alt="A clean, modern digital map interface displaying a pin location in a stylized urban grid. The map uses a light-mode color palette with subtle soft gray roads, pale green park areas, and a vibrant primary-colored destination pin. The lighting is flat and objective, typical of high-end SaaS navigation systems. The overall mood is precise, reliable, and functional." data-location="Seattle, WA" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt3MWWV4Z02yWxbmQfgTbmiMu_CABrmyKlmz3YKZd_Z5-DzWAArEyPplnirb2IO8MKne4GmGvsyOodO_MUMJWMsHza3HIAY66MVZYAkpg3Mgoi6vCmdjI2a8ls9ApRmwFKEg4Khvgo5h6y_gVNXIUSO-YmrqoHT1UnVibw0wKP1XyFPplssgIcKmwra4nZd2xw1Plrx3aj8I6HX_Xkn-2ojMFMb2zcqbUwkdk_qkbwPevPITe83YDSyXz1oVjju7XndQbPkCbplxw7"/>
+<button class="absolute top-2 right-2 bg-surface text-primary rounded-full p-2 shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined">directions</span>
+</button>
+</div>
+<div class="p-margin-mobile flex gap-stack-md items-start">
+<span class="material-symbols-outlined text-outline mt-0.5">location_on</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">400 Broad St, Floor 4</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Seattle, WA 98109</span>
+<span class="font-label-sm text-label-sm text-outline mt-1">Gate code: 4921#</span>
+</div>
+</div>
+</section>
+<!-- Description Section -->
+<section class="bg-surface-container-lowest rounded-xl p-margin-mobile border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-stack-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[20px]">description</span>
+                Job Description
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Complete diagnostic on HVAC unit #3 on the north roof. Client reports inconsistent cooling during afternoon hours. Check refrigerant levels, inspect compressor, and clear any debris from the condenser coils. Ensure all panels are secured before departure.
+            </p>
+</section>
+<!-- Photo Proof Section -->
+<section class="bg-surface-container-lowest rounded-xl p-margin-mobile border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-stack-md">
+<div class="flex justify-between items-end">
+<h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[20px]">photo_camera</span>
+                    Photo Proof
+                </h3>
+<span class="font-label-sm text-label-sm text-outline">0 / 3 required</span>
+</div>
+<div class="grid grid-cols-3 gap-base">
+<!-- Slot 1 -->
+<button class="aspect-square rounded-lg border-2 border-dashed border-outline-variant bg-surface hover:bg-surface-container transition-colors flex flex-col items-center justify-center gap-1 text-outline active:scale-95">
+<span class="material-symbols-outlined">add</span>
+<span class="font-label-sm text-label-sm">Before</span>
+</button>
+<!-- Slot 2 -->
+<button class="aspect-square rounded-lg border-2 border-dashed border-outline-variant bg-surface hover:bg-surface-container transition-colors flex flex-col items-center justify-center gap-1 text-outline active:scale-95">
+<span class="material-symbols-outlined">add</span>
+<span class="font-label-sm text-label-sm">During</span>
+</button>
+<!-- Slot 3 -->
+<button class="aspect-square rounded-lg border-2 border-dashed border-outline-variant bg-surface hover:bg-surface-container transition-colors flex flex-col items-center justify-center gap-1 text-outline active:scale-95">
+<span class="material-symbols-outlined">add</span>
+<span class="font-label-sm text-label-sm">After</span>
+</button>
+</div>
+</section>
+<!-- Signature Section -->
+<section class="bg-surface-container-lowest rounded-xl p-margin-mobile border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-stack-md mb-8 md:mb-0">
+<h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[20px]">draw</span>
+                Client Signature
+            </h3>
+<div class="h-32 w-full rounded-lg bg-surface border border-outline-variant flex items-center justify-center text-outline cursor-pointer hover:bg-surface-container transition-colors">
+<span class="font-body-md text-body-md">Tap here to sign</span>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar (Contextual to Job Detail) -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-surface-variant px-margin-mobile py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] z-50 flex flex-col gap-base md:flex-row md:justify-end md:max-w-3xl md:left-1/2 md:-translate-x-1/2 md:border-x md:rounded-t-xl">
+<div class="flex gap-base w-full md:w-auto">
+<button class="flex-1 md:flex-none px-4 py-2 rounded-full border border-primary text-primary font-label-lg text-label-lg hover:bg-primary-container hover:text-on-primary-container transition-colors active:scale-95 flex justify-center items-center">
+                Create Quote
+            </button>
+<button class="flex-1 md:flex-none px-4 py-2 rounded-full border border-primary text-primary font-label-lg text-label-lg hover:bg-primary-container hover:text-on-primary-container transition-colors active:scale-95 flex justify-center items-center">
+                Create Invoice
+            </button>
+</div>
+<button class="w-full md:w-auto px-6 py-3 rounded-full bg-primary text-on-primary font-label-lg text-label-lg hover:bg-on-primary-fixed-variant transition-colors active:scale-95 shadow-sm flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+            Mark Completed
+        </button>
+</div>
+</body></html>

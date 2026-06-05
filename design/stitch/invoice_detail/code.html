@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Invoice Detail - ServiceSphere</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#ccc3d8",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary": "#474e60",
+                        "on-primary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-dim": "#d8dadc",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#4e45d5",
+                        "inverse-surface": "#2d3133",
+                        "outline": "#7b7487",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1e",
+                        "on-tertiary-fixed-variant": "#404758",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-container": "#ede0ff",
+                        "on-secondary-fixed-variant": "#372abf",
+                        "on-error-container": "#93000a",
+                        "surface": "#f7f9fb",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-fixed": "#eaddff",
+                        "tertiary-fixed-dim": "#c0c6db",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-tertiary-container": "#dfe5fa",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "on-surface-variant": "#4a4455",
+                        "secondary-fixed": "#e3dfff",
+                        "surface-container": "#eceef0",
+                        "on-secondary-container": "#fffbff",
+                        "primary": "#630ed4",
+                        "tertiary-fixed": "#dce2f7",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "inverse-primary": "#d2bbff",
+                        "on-tertiary-fixed": "#141b2b",
+                        "secondary-container": "#6860ef",
+                        "tertiary-container": "#5f6678",
+                        "on-surface": "#191c1e",
+                        "primary-container": "#7c3aed",
+                        "on-primary-fixed": "#25005a",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed": "#100069",
+                        "surface-tint": "#732ee4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-tablet": "24px",
+                        "margin-mobile": "16px",
+                        "stack-md": "12px",
+                        "stack-lg": "24px",
+                        "stack-sm": "4px"
+                    },
+                    "fontFamily": {
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "title-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-lg": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen pb-[120px]">
+<!-- TopAppBar -->
+<header class="bg-surface w-full top-0 sticky shadow-sm flex items-center justify-between px-margin-mobile h-16 z-40">
+<div class="flex items-center gap-base">
+<span class="material-symbols-outlined text-primary hover:bg-surface-container active:scale-95 duration-150 p-2 rounded-full cursor-pointer">menu</span>
+<span class="font-headline-sm text-headline-sm font-bold text-primary">ServiceSphere</span>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-primary hover:bg-surface-container active:scale-95 duration-150 p-2 rounded-full cursor-pointer">account_circle</span>
+</div>
+</header>
+<main class="px-margin-mobile pt-stack-md mx-auto max-w-2xl">
+<!-- Invoice Header -->
+<section class="flex justify-between items-start mb-stack-lg mt-stack-sm">
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Invoice #INV-2023-042</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-stack-sm">Issued: Oct 24, 2023 • Due: Nov 24, 2023</p>
+</div>
+<div class="bg-error-container text-on-error-container px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">error</span>
+<span class="font-label-sm text-label-sm">Unpaid</span>
+</div>
+</section>
+<!-- Amount Due Callout -->
+<section class="bg-primary-container rounded-xl p-stack-lg mb-stack-lg text-center shadow-sm relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+<p class="font-label-lg text-label-lg text-on-primary-container mb-1 relative z-10">Total Amount Due</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-primary-container relative z-10">$1,210.00</p>
+</section>
+<!-- Client Info Bento -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md mb-stack-md shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-surface-container-highest">
+<h2 class="font-title-lg text-title-lg text-on-surface mb-stack-md border-b border-surface-container-highest pb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">person</span> Billed To
+            </h2>
+<div class="flex flex-col gap-1">
+<p class="font-label-lg text-label-lg text-on-surface">Acme Corporation / John Doe</p>
+<p class="font-body-md text-body-md text-on-surface-variant">123 Business Rd, Suite 100<br/>Metropolis, NY 10001</p>
+<div class="flex items-center gap-2 mt-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+<span class="font-body-md text-body-md">john.doe@acmecorp.com</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">call</span>
+<span class="font-body-md text-body-md">(555) 123-4567</span>
+</div>
+</div>
+</section>
+<!-- Line Items -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md mb-stack-md shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-surface-container-highest relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-surface-variant rounded-l-xl"></div>
+<h2 class="font-title-lg text-title-lg text-on-surface mb-stack-md border-b border-surface-container-highest pb-2 pl-2">Services &amp; Items</h2>
+<div class="flex justify-between py-stack-md border-b border-surface-container-highest last:border-0 pl-2">
+<div class="flex-1 pr-4">
+<p class="font-label-lg text-label-lg text-on-surface">Commercial HVAC Maintenance</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Comprehensive annual inspection, cleaning of condenser coils, and filter replacement for rooftop units.</p>
+</div>
+<div class="text-right whitespace-nowrap">
+<p class="font-label-lg text-label-lg text-on-surface">$450.00</p>
+<p class="font-body-md text-body-md text-on-surface-variant">1 × $450/ea</p>
+</div>
+</div>
+<div class="flex justify-between py-stack-md border-b border-surface-container-highest last:border-0 pl-2">
+<div class="flex-1 pr-4">
+<p class="font-label-lg text-label-lg text-on-surface">Replacement Parts</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Compressor relay (x2), heavy-duty fuses, and refrigerant top-off.</p>
+</div>
+<div class="text-right whitespace-nowrap">
+<p class="font-label-lg text-label-lg text-on-surface">$650.00</p>
+<p class="font-body-md text-body-md text-on-surface-variant">1 × $650/ea</p>
+</div>
+</div>
+</section>
+<!-- Totals Calculation -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md mb-stack-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-surface-container-highest">
+<div class="flex justify-between py-1">
+<span class="font-body-md text-body-md text-on-surface-variant">Subtotal</span>
+<span class="font-label-lg text-label-lg text-on-surface">$1,100.00</span>
+</div>
+<div class="flex justify-between py-1">
+<span class="font-body-md text-body-md text-on-surface-variant">Tax (10%)</span>
+<span class="font-label-lg text-label-lg text-on-surface">$110.00</span>
+</div>
+<div class="flex justify-between py-3 mt-stack-sm border-t border-surface-container-highest">
+<span class="font-title-lg text-title-lg text-on-surface font-bold">Total Due</span>
+<span class="font-title-lg text-title-lg text-primary font-bold">$1,210.00</span>
+</div>
+</section>
+<!-- Payment Instructions -->
+<section class="bg-surface-container rounded-xl p-stack-md mb-stack-lg">
+<h3 class="font-label-lg text-label-lg text-on-surface flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[18px]">info</span> Payment Notes
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Please remit payment within 30 days of issuance. Make checks payable to ServiceSphere Inc. Direct deposit details: ACH Routing 123456789, Account 987654321. Late payments subject to a 1.5% monthly fee.
+            </p>
+</section>
+</main>
+<!-- Sticky Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-surface-container shadow-[0_-4px_12px_rgba(0,0,0,0.05)] p-margin-mobile z-30 pb-safe">
+<div class="max-w-2xl mx-auto flex flex-col gap-stack-md">
+<button class="bg-primary text-on-primary font-label-lg text-label-lg py-3 rounded-lg w-full flex items-center justify-center gap-2 hover:bg-on-primary-fixed-variant transition-colors active:scale-95 duration-150 shadow-sm">
+<span class="material-symbols-outlined">check_circle</span> Mark as Paid
+            </button>
+<div class="flex gap-stack-md">
+<button class="flex-1 border border-outline text-on-surface font-label-lg text-label-lg py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-colors active:scale-95 duration-150 bg-surface-container-lowest">
+<span class="material-symbols-outlined">picture_as_pdf</span> Generate PDF
+                </button>
+<button class="flex-1 border border-outline text-on-surface font-label-lg text-label-lg py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-colors active:scale-95 duration-150 bg-surface-container-lowest">
+<span class="material-symbols-outlined">share</span> Share
+                </button>
+</div>
+</div>
+</div>
+</body></html>

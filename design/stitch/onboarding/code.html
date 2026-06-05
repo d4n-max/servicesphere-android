@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ServiceSphere Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#ccc3d8",
+                      "surface-variant": "#e0e3e5",
+                      "tertiary": "#474e60",
+                      "on-primary": "#ffffff",
+                      "background": "#f7f9fb",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-dim": "#d8dadc",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary": "#4e45d5",
+                      "inverse-surface": "#2d3133",
+                      "outline": "#7b7487",
+                      "on-secondary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-background": "#191c1e",
+                      "on-tertiary-fixed-variant": "#404758",
+                      "surface-bright": "#f7f9fb",
+                      "on-primary-container": "#ede0ff",
+                      "on-secondary-fixed-variant": "#372abf",
+                      "on-error-container": "#93000a",
+                      "surface": "#f7f9fb",
+                      "surface-container-high": "#e6e8ea",
+                      "primary-fixed": "#eaddff",
+                      "tertiary-fixed-dim": "#c0c6db",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-tertiary-container": "#dfe5fa",
+                      "error": "#ba1a1a",
+                      "secondary-fixed-dim": "#c3c0ff",
+                      "on-surface-variant": "#4a4455",
+                      "secondary-fixed": "#e3dfff",
+                      "surface-container": "#eceef0",
+                      "on-secondary-container": "#fffbff",
+                      "primary": "#630ed4",
+                      "tertiary-fixed": "#dce2f7",
+                      "on-primary-fixed-variant": "#5a00c6",
+                      "inverse-primary": "#d2bbff",
+                      "on-tertiary-fixed": "#141b2b",
+                      "secondary-container": "#6860ef",
+                      "tertiary-container": "#5f6678",
+                      "on-surface": "#191c1e",
+                      "primary-container": "#7c3aed",
+                      "on-primary-fixed": "#25005a",
+                      "error-container": "#ffdad6",
+                      "primary-fixed-dim": "#d2bbff",
+                      "surface-container-low": "#f2f4f6",
+                      "on-secondary-fixed": "#100069",
+                      "surface-tint": "#732ee4"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "base": "8px",
+                      "margin-tablet": "24px",
+                      "margin-mobile": "16px",
+                      "stack-md": "12px",
+                      "stack-lg": "24px",
+                      "stack-sm": "4px"
+              },
+              "fontFamily": {
+                      "label-lg": ["Plus Jakarta Sans"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "headline-sm": ["Plus Jakarta Sans"],
+                      "label-sm": ["Plus Jakarta Sans"],
+                      "body-md": ["Plus Jakarta Sans"],
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "body-lg": ["Plus Jakarta Sans"],
+                      "title-lg": ["Plus Jakarta Sans"]
+              },
+              "fontSize": {
+                      "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .carousel-container {
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        .carousel-slide {
+            scroll-snap-align: start;
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background h-full w-full flex flex-col font-body-md overflow-hidden antialiased">
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col relative w-full h-full pb-stack-lg">
+<!-- Skip Button (Absolute Top Right) -->
+<div class="absolute top-margin-mobile right-margin-mobile z-10">
+<button class="font-label-lg text-label-lg text-on-surface-variant px-4 py-2 rounded-full hover:bg-surface-container transition-colors">
+                Skip
+            </button>
+</div>
+<!-- Carousel -->
+<div class="flex-1 flex carousel-container overflow-x-auto no-scrollbar w-full h-full" id="onboarding-carousel">
+<!-- Slide 1 -->
+<div class="carousel-slide flex-none w-full h-full flex flex-col items-center justify-center px-margin-mobile pt-stack-lg">
+<div class="w-full max-w-sm flex flex-col items-center text-center space-y-stack-lg">
+<!-- Image Wrapper -->
+<div class="w-64 h-64 rounded-xl bg-primary-container/10 flex items-center justify-center mb-stack-md relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-tr from-primary-container/20 to-transparent mix-blend-overlay"></div>
+<span class="material-symbols-outlined text-8xl text-primary" data-icon="smartphone" data-weight="fill" style="font-variation-settings: 'FILL' 1;">smartphone</span>
+</div>
+<!-- Content -->
+<div class="space-y-stack-sm w-full">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background md:font-headline-lg md:text-headline-lg">
+                            Manage field jobs from your phone
+                        </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[280px] mx-auto">
+                            Access schedules, job details, and customer info instantly, wherever you are.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Slide 2 -->
+<div class="carousel-slide flex-none w-full h-full flex flex-col items-center justify-center px-margin-mobile pt-stack-lg">
+<div class="w-full max-w-sm flex flex-col items-center text-center space-y-stack-lg">
+<div class="w-64 h-64 rounded-xl bg-secondary-container/10 flex items-center justify-center mb-stack-md relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-tr from-secondary-container/20 to-transparent mix-blend-overlay"></div>
+<span class="material-symbols-outlined text-8xl text-secondary" data-icon="request_quote" data-weight="fill" style="font-variation-settings: 'FILL' 1;">request_quote</span>
+</div>
+<div class="space-y-stack-sm w-full">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background md:font-headline-lg md:text-headline-lg">
+                            Send quotes and invoices faster
+                        </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[280px] mx-auto">
+                            Create professional estimates on-site and get paid quicker with digital invoicing.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Slide 3 -->
+<div class="carousel-slide flex-none w-full h-full flex flex-col items-center justify-center px-margin-mobile pt-stack-lg">
+<div class="w-full max-w-sm flex flex-col items-center text-center space-y-stack-lg">
+<div class="w-64 h-64 rounded-xl bg-tertiary-container/10 flex items-center justify-center mb-stack-md relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-tr from-tertiary-container/20 to-transparent mix-blend-overlay"></div>
+<span class="material-symbols-outlined text-8xl text-tertiary" data-icon="draw" data-weight="fill" style="font-variation-settings: 'FILL' 1;">draw</span>
+</div>
+<div class="space-y-stack-sm w-full">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background md:font-headline-lg md:text-headline-lg">
+                            Capture photo proof and signatures
+                        </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[280px] mx-auto">
+                            Document completed work with photos and collect digital sign-offs instantly.
+                        </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Controls Area -->
+<div class="w-full px-margin-mobile flex flex-col items-center space-y-stack-lg mt-auto pt-stack-md bg-background shrink-0">
+<!-- Indicators -->
+<div class="flex space-x-2" id="carousel-indicators">
+<div class="w-6 h-2 rounded-full bg-primary transition-all duration-300 indicator" data-index="0"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant transition-all duration-300 indicator" data-index="1"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant transition-all duration-300 indicator" data-index="2"></div>
+</div>
+<!-- CTA Button -->
+<div class="w-full max-w-sm">
+<button class="w-full bg-primary text-on-primary font-label-lg text-label-lg py-[12px] rounded-lg shadow-sm hover:shadow-md hover:bg-primary-fixed-variant active:scale-95 transition-all duration-200">
+                    Get Started
+                </button>
+</div>
+<!-- Log In Link -->
+<div class="pb-margin-mobile">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    Already have an account? <a class="text-primary font-label-lg text-label-lg hover:underline" href="#">Log in</a>
+</p>
+</div>
+</div>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const carousel = document.getElementById('onboarding-carousel');
+            const indicators = document.querySelectorAll('.indicator');
+            const slides = document.querySelectorAll('.carousel-slide');
+            
+            let isScrolling;
+
+            // Function to update indicators based on scroll position
+            const updateIndicators = () => {
+                const scrollLeft = carousel.scrollLeft;
+                const slideWidth = carousel.clientWidth;
+                const currentIndex = Math.round(scrollLeft / slideWidth);
+
+                indicators.forEach((indicator, index) => {
+                    if (index === currentIndex) {
+                        indicator.classList.remove('w-2', 'bg-surface-variant');
+                        indicator.classList.add('w-6', 'bg-primary');
+                    } else {
+                        indicator.classList.remove('w-6', 'bg-primary');
+                        indicator.classList.add('w-2', 'bg-surface-variant');
+                    }
+                });
+            };
+
+            // Listen for scroll events with a debounce
+            carousel.addEventListener('scroll', () => {
+                window.clearTimeout(isScrolling);
+                isScrolling = setTimeout(() => {
+                    updateIndicators();
+                }, 50); // Small delay to wait for snapping to finish
+            });
+            
+            // Allow clicking indicators to jump to slide
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                     const slideWidth = carousel.clientWidth;
+                     carousel.scrollTo({
+                         left: slideWidth * index,
+                         behavior: 'smooth'
+                     });
+                });
+            });
+        });
+    </script>
+</body></html>

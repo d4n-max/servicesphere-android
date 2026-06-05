@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ServiceSphere Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#ccc3d8",
+                    "surface-variant": "#e0e3e5",
+                    "tertiary": "#474e60",
+                    "on-primary": "#ffffff",
+                    "background": "#f7f9fb",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-dim": "#d8dadc",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#4e45d5",
+                    "inverse-surface": "#2d3133",
+                    "outline": "#7b7487",
+                    "on-secondary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-background": "#191c1e",
+                    "on-tertiary-fixed-variant": "#404758",
+                    "surface-bright": "#f7f9fb",
+                    "on-primary-container": "#ede0ff",
+                    "on-secondary-fixed-variant": "#372abf",
+                    "on-error-container": "#93000a",
+                    "surface": "#f7f9fb",
+                    "surface-container-high": "#e6e8ea",
+                    "primary-fixed": "#eaddff",
+                    "tertiary-fixed-dim": "#c0c6db",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-tertiary-container": "#dfe5fa",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#c3c0ff",
+                    "on-surface-variant": "#4a4455",
+                    "secondary-fixed": "#e3dfff",
+                    "surface-container": "#eceef0",
+                    "on-secondary-container": "#fffbff",
+                    "primary": "#630ed4",
+                    "tertiary-fixed": "#dce2f7",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "inverse-primary": "#d2bbff",
+                    "on-tertiary-fixed": "#141b2b",
+                    "secondary-container": "#6860ef",
+                    "tertiary-container": "#5f6678",
+                    "on-surface": "#191c1e",
+                    "primary-container": "#7c3aed",
+                    "on-primary-fixed": "#25005a",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#d2bbff",
+                    "surface-container-low": "#f2f4f6",
+                    "on-secondary-fixed": "#100069",
+                    "surface-tint": "#732ee4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "base": "8px",
+                    "margin-tablet": "24px",
+                    "margin-mobile": "16px",
+                    "stack-md": "12px",
+                    "stack-lg": "24px",
+                    "stack-sm": "4px"
+            },
+            "fontFamily": {
+                    "label-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "headline-sm": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "title-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                    "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                    "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                    "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                    "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                    "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "title-lg": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md antialiased pb-24 selection:bg-primary/20">
+<header class="w-full top-0 sticky bg-surface shadow-sm z-40">
+<div class="flex items-center justify-between px-margin-mobile h-16 w-full">
+<button class="text-on-surface-variant hover:bg-surface-container transition-colors active:scale-95 duration-150 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="font-headline-sm text-headline-sm font-bold text-primary">ServiceSphere</div>
+<div class="h-8 w-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant flex-shrink-0 cursor-pointer active:scale-95 duration-150">
+<img alt="User Profile" class="h-full w-full object-cover" data-alt="A close-up, highly detailed portrait of a professional tradesman or field service technician in a clean, modern setting. He has short hair, a slight smile, and wears a neat, dark-colored utility polo shirt. The lighting is bright, soft, and balanced, typical of a professional corporate headshot. The background is a slightly out-of-focus, neutral light grey, emphasizing the subject. The overall mood is confident, approachable, and reliable, fitting a modern SaaS dashboard context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8VzpWbg82bePpi-VGebJ_JDWstjaCdlRVfGhrnJeveYKro3rMkaa6jTmpOvwVNpEBpOBVB1TxtTlVwYNfldKVWg-1adiDph1YtXcOUi3tJyTTI8HnQmT2UJuWtBPXANS-yqBuKy4jIUOnaW7FFMZdjQpSgKiShYZiK_INu5-IRDsQsgH9GenWIo_zSut7GZoEtg5bRcemH5TpdlL6vX7izta1d7FyfEa3SAzj7QZrTyLu0OEND4DGAVuf6UQhMemEAPm0fUltXhSN"/>
+</div>
+</div>
+</header>
+<main class="px-margin-mobile flex flex-col gap-stack-lg pt-stack-lg w-full max-w-4xl mx-auto">
+<section class="flex flex-col gap-stack-sm">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Good Morning, Alex</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Elite Electric</p>
+</section>
+<section class="grid grid-cols-4 gap-base">
+<button class="flex flex-col items-center justify-center gap-2 group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-sm group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface">Job</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shadow-sm group-hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_add</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface">Client</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shadow-sm group-hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">request_quote</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface">Quote</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shadow-sm group-hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface">Invoice</span>
+</button>
+</section>
+<section class="grid grid-cols-2 gap-stack-md">
+<div class="col-span-2 bg-surface rounded-xl border border-surface-variant p-margin-mobile flex flex-col gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+<div class="flex items-center justify-between">
+<span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">account_balance_wallet</span>
+                        Monthly Revenue
+                    </span>
+<span class="font-label-sm text-label-sm text-primary bg-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">trending_up</span> 12%
+                    </span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-surface mt-1">$24,500.00</div>
+</div>
+<div class="bg-surface rounded-xl border border-surface-variant p-stack-md flex flex-col gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+<span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-error">warning</span>
+                    Unpaid
+                </span>
+<div class="font-headline-sm text-headline-sm text-on-surface">$3,240</div>
+<span class="font-label-sm text-label-sm text-error bg-error/10 px-2 py-0.5 rounded w-fit mt-1">4 Invoices</span>
+</div>
+<div class="bg-surface rounded-xl border border-surface-variant p-stack-md flex flex-col gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+<span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-tertiary">draft</span>
+                    Drafts
+                </span>
+<div class="font-headline-sm text-headline-sm text-on-surface">6 Quotes</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded w-fit mt-1">Pending Send</span>
+</div>
+</section>
+<section class="flex flex-col gap-stack-md">
+<div class="flex items-center justify-between">
+<h2 class="font-title-lg text-title-lg text-on-surface">Today's Jobs</h2>
+<button class="font-label-sm text-label-sm text-primary hover:text-primary-fixed-variant transition-colors">View All</button>
+</div>
+<div class="flex flex-col gap-stack-md">
+<div class="relative bg-surface rounded-xl border border-surface-variant p-margin-mobile shadow-[0_4px_12px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col gap-stack-md">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">09:00 AM - 11:30 AM</span>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary/10 px-2 py-0.5 rounded-md w-fit mt-1">In Progress</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center overflow-hidden border border-outline-variant">
+<img alt="Client Avatar" class="h-full w-full object-cover" data-alt="A bright, cheerful portrait of a middle-aged male client in a casual setting. He is wearing a light blue collared shirt and smiling softly. The lighting is natural and flattering, suggesting a residential environment. The background is slightly blurred showing hints of a modern home interior. The image conveys trust and positive customer relations suitable for a service app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmErprIg-VrFG0eURw3xXk8fxC-_vNfw1GAhLlHuiDSI759W_sEho4cHTCDmyA_F0vxW5Pl2Omak4JtQio3iWxhKtUMH6pX2gFxd1BHLRPP8QSucbWg9rqASSUlRKRELemfToLckgz0ECojppO13yJI3vrDdOY-VIxdrY6XnXkP_lX6iiEJV5gt-LoHQxQ02QecVZmEpwNTwW09hZcgsaVd2dt8a1bR8hgY0G501xEQQQithAI1R-B09LRs_LFVgHyM9TdPYBIlpEa"/>
+</div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-title-lg text-title-lg text-on-surface">Main Panel Upgrade</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                            1240 Oak Street, Suite A
+                        </p>
+</div>
+<div class="flex gap-base mt-2">
+<button class="flex-1 bg-primary text-on-primary font-label-lg text-label-lg py-[12px] rounded-lg text-center active:scale-95 transition-transform shadow-sm">Complete Job</button>
+<button class="w-[48px] border border-outline-variant text-on-surface font-label-lg text-label-lg py-[12px] rounded-lg flex items-center justify-center active:scale-95 transition-transform hover:bg-surface-container">
+<span class="material-symbols-outlined">map</span>
+</button>
+</div>
+</div>
+<div class="relative bg-surface rounded-xl border border-surface-variant p-margin-mobile shadow-[0_2px_4px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col gap-stack-md opacity-80">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-surface-variant"></div>
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">01:00 PM - 02:00 PM</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-md w-fit mt-1">Scheduled</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant font-label-lg text-label-lg border border-outline-variant">
+                             SJ
+                        </div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-title-lg text-title-lg text-on-surface">Circuit Diagnostic</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                            880 River Road
+                        </p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 w-full z-50 rounded-t-xl bg-surface shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
+<div class="flex justify-around items-center h-20 px-2 pb-2">
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-transform duration-200 w-16 h-12">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-sm text-label-sm mt-0.5">Dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high rounded-full active:scale-90 transition-transform duration-200 h-12">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-sm text-label-sm mt-0.5">Jobs</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high rounded-full active:scale-90 transition-transform duration-200 h-12">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-sm text-label-sm mt-0.5">Clients</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high rounded-full active:scale-90 transition-transform duration-200 h-12">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-sm text-label-sm mt-0.5">Invoices</span>
+</button>
+</div>
+</nav>
+</body></html>
