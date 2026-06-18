@@ -13,6 +13,7 @@ sealed class Route(val path: String) {
     data object Splash : Route("splash")
     data object Onboarding : Route("onboarding")
     data object BusinessSetup : Route("business_setup")
+    data object Walkthrough : Route("walkthrough?source={source}")
     data object Dashboard : Route("dashboard")
     data object Jobs : Route("jobs")
     data object Calendar : Route("calendar")
@@ -85,6 +86,9 @@ fun captureSignatureRoute(jobId: String? = null, invoiceId: String? = null): Str
     )
     return if (params.isEmpty()) "capture_signature" else "capture_signature?${params.joinToString("&")}"
 }
+
+fun walkthroughRoute(source: String? = null): String =
+    if (source.isNullOrBlank()) "walkthrough" else "walkthrough?source=$source"
 
 fun composeMessageRoute(
     type: String,

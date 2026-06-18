@@ -122,7 +122,7 @@ fun JobsScreen(
                 uiState.jobs.isEmpty() && uiState.searchQuery.isBlank() && uiState.selectedFilter == JobFilter.ALL -> item {
                     EmptyState(
                         title = "No jobs yet",
-                        message = "Create your first service job and keep your day organized.",
+                        message = "Jobs help you track scheduled work, status, notes, photos, and signatures.",
                         icon = Icons.Filled.HomeRepairService,
                         actionLabel = "Create Job",
                         onAction = onAddJob

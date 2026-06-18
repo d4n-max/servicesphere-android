@@ -91,7 +91,7 @@ fun QuotesScreen(
                 uiState.quotes.isEmpty() && uiState.searchQuery.isBlank() && uiState.selectedStatusFilter == null -> item {
                     EmptyState(
                         title = "No quotes yet",
-                        message = "Create your first professional quote and send it to a client faster.",
+                        message = "Create a quote first, then convert it into an invoice when approved.",
                         icon = Icons.Filled.Description,
                         actionLabel = "Create Quote",
                         onAction = onAddQuote

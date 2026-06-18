@@ -19,6 +19,7 @@ class UserPreferences(context: Context) {
     private val selectedTradeTypeKey = stringPreferencesKey("selected_trade_type")
     private val onboardingCompletedAtKey = longPreferencesKey("onboarding_completed_at")
     private val businessSetupCompletedAtKey = longPreferencesKey("business_setup_completed_at")
+    private val walkthroughSeenKey = booleanPreferencesKey("walkthrough_seen")
     private val debugProEnabledKey = booleanPreferencesKey("debug_is_pro_enabled")
     private val defaultJobReminderTypeKey = stringPreferencesKey("default_job_reminder_type")
     private val autoDisableCompletedJobRemindersKey = booleanPreferencesKey("auto_disable_completed_job_reminders")
@@ -45,6 +46,10 @@ class UserPreferences(context: Context) {
 
     val businessSetupCompletedAt: Flow<Long?> = dataStore.data.map { preferences ->
         preferences[businessSetupCompletedAtKey]
+    }
+
+    val hasSeenWalkthrough: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[walkthroughSeenKey] ?: false
     }
 
     val debugProEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
@@ -81,6 +86,12 @@ class UserPreferences(context: Context) {
         dataStore.edit { preferences ->
             val trimmed = value?.trim().orEmpty()
             if (trimmed.isBlank()) preferences.remove(selectedTradeTypeKey) else preferences[selectedTradeTypeKey] = trimmed
+        }
+    }
+
+    suspend fun setWalkthroughSeen(value: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[walkthroughSeenKey] = value
         }
     }
 
@@ -121,6 +132,7 @@ class UserPreferences(context: Context) {
             preferences.remove(selectedTradeTypeKey)
             preferences.remove(onboardingCompletedAtKey)
             preferences.remove(businessSetupCompletedAtKey)
+            preferences.remove(walkthroughSeenKey)
         }
     }
 }

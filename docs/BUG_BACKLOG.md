@@ -1,9 +1,13 @@
 # ServiceSphere Bug Backlog
 
-Last updated: 2026-06-05
+Last updated: 2026-06-18
 
 ## Fixed In This Polish Pass
 
+- Removed the non-functional hamburger icon from the shared app top bar because ServiceSphere uses bottom navigation rather than a drawer.
+- Added a Settings "Rate ServiceSphere" action that opens the Google Play listing with a web fallback and friendly failure message.
+- Added a lightweight Help & Support FAQ section in Settings for offline storage, offline use, export, quotes/invoices, photo proof/signatures, and support contact guidance.
+- Added a post-setup guided walkthrough with local DataStore completion state and a Settings replay option.
 - Form keyboard dismissal was inconsistent outside the Job form. Client, Quote, Invoice, Business Profile, Currency & Tax, Document Settings, and Business Setup screens now clear focus and hide the keyboard when users tap outside, save, cancel/back, or open key selectors.
 - Quote and Invoice builder pickers could open while the keyboard still covered the lower screen. Client/job/quote/status picker actions now dismiss the keyboard first.
 - Quote and Invoice line-item numeric fields did not have clear IME actions. Quantity advances, unit price completes, and discount/tax fields advance or complete more predictably.
@@ -23,6 +27,7 @@ Last updated: 2026-06-05
 - Add more robust visual tests/screenshots for small devices and large font accessibility.
 - Add repository-level tests for delete-data cleanup and export payload generation.
 - Review warning/deprecation output with `./gradlew --warning-mode all`.
+- Perform emulator walkthrough QA on rotation and very small phone viewports once `adb` is available.
 
 ## Low Priority
 

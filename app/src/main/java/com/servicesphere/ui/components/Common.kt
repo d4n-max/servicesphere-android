@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,7 +49,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.servicesphere.R
 import com.servicesphere.ui.navigation.BottomDestination
-import com.servicesphere.ui.theme.ServiceSphereBackground
 import com.servicesphere.ui.theme.ServiceSphereDanger
 import com.servicesphere.ui.theme.ServiceSphereDarkSurface
 import com.servicesphere.ui.theme.ServiceSphereOutline
@@ -262,9 +259,9 @@ fun ServiceSphereTopBar(title: String, modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = ServiceSphereDarkSurface)
-            Text(title, style = MaterialTheme.typography.headlineSmall, color = ServiceSpherePrimary, fontWeight = FontWeight.Bold)
             ServiceSphereLogo(Modifier.size(36.dp))
+            Text(title, style = MaterialTheme.typography.headlineSmall, color = ServiceSpherePrimary, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.size(36.dp))
         }
     }
 }

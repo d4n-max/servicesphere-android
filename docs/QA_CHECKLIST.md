@@ -1,6 +1,6 @@
 # ServiceSphere QA Checklist
 
-Last updated: 2026-06-05
+Last updated: 2026-06-18
 
 ## Build Verification
 
@@ -16,6 +16,11 @@ Last updated: 2026-06-05
 - [ ] Onboarding can be completed.
 - [ ] Business setup can be completed with required fields.
 - [ ] Bottom navigation switches between Dashboard, Jobs, Clients, Invoices, and Settings.
+- [ ] Shared top bar does not show a non-functional hamburger/menu button.
+- [ ] First-run walkthrough appears after required business setup is complete.
+- [ ] Walkthrough Skip marks it complete and lands safely on Dashboard.
+- [ ] Walkthrough Back and Next move between steps correctly.
+- [ ] Final walkthrough button says Go to Dashboard and does not show again after restart.
 - [ ] Back navigation returns to the expected previous screen.
 - [ ] Empty states render without overlapping controls.
 
@@ -83,6 +88,9 @@ Last updated: 2026-06-05
 - [ ] Export share opens Android share sheet.
 - [ ] Delete Data confirmation clears local app data and reminders.
 - [ ] Privacy Policy and Terms screens open.
+- [ ] Rate ServiceSphere opens the Play Store listing or web fallback without crashing.
+- [ ] Help & Support FAQ expands, collapses, and scrolls correctly.
+- [ ] Replay walkthrough opens from Settings and returns safely without resetting app data.
 
 ## Visual QA
 

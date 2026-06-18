@@ -40,6 +40,7 @@ import com.servicesphere.ui.components.StatusChip
 import com.servicesphere.ui.components.StatusTone
 import com.servicesphere.ui.components.SummaryMetricCard
 import com.servicesphere.ui.theme.ServiceSphereDanger
+import com.servicesphere.ui.theme.ServiceSpherePrimary
 import com.servicesphere.ui.theme.ServiceSphereTextSecondary
 
 @Composable
@@ -123,6 +124,9 @@ private fun DashboardContent(
         }
 
         if (uiState.totalClients == 0 && uiState.totalJobs == 0 && uiState.recentInvoices.isEmpty()) {
+            item {
+                DashboardHintCard("Use quick actions to create your first job, client, quote, or invoice.")
+            }
             item {
                 FirstWorkspaceActionCard(
                     onNewClient = onNewClient,
@@ -215,6 +219,13 @@ private fun DashboardContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun DashboardHintCard(message: String) {
+    ServiceSphereCard(accentColor = ServiceSpherePrimary) {
+        Text(message, color = ServiceSphereTextSecondary, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

@@ -37,6 +37,7 @@ import com.servicesphere.ui.navigation.invoiceDetailRoute
 import com.servicesphere.ui.navigation.jobDetailRoute
 import com.servicesphere.ui.navigation.paywallRoute
 import com.servicesphere.ui.navigation.quoteDetailRoute
+import com.servicesphere.ui.navigation.walkthroughRoute
 import com.servicesphere.ui.components.PremiumGateDialog
 import com.servicesphere.ui.screens.onboarding.BusinessSetupScreen
 import com.servicesphere.ui.screens.clients.ClientDetailScreen
@@ -52,6 +53,7 @@ import com.servicesphere.ui.screens.jobs.JobsScreen
 import com.servicesphere.ui.screens.jobs.JobsViewMode
 import com.servicesphere.ui.screens.messaging.MessageComposerScreen
 import com.servicesphere.ui.screens.onboarding.OnboardingScreen
+import com.servicesphere.ui.screens.onboarding.WalkthroughScreen
 import com.servicesphere.ui.screens.paywall.PaywallScreen
 import com.servicesphere.ui.screens.placeholder.QuickActionPlaceholderScreen
 import com.servicesphere.ui.screens.quotes.QuoteDetailScreen
@@ -80,7 +82,10 @@ fun ServiceSphereApp(initialJobId: String? = null) {
         val scope = rememberCoroutineScope()
         var blockedGate by remember { mutableStateOf<FeatureGateResult?>(null) }
         var handledInitialJobId by remember { mutableStateOf(false) }
-        val showTopBar = currentRoute != Route.Onboarding.path && currentRoute != Route.Splash.path && currentRoute != Route.BusinessSetup.path
+        val showTopBar = currentRoute != Route.Onboarding.path &&
+            currentRoute != Route.Splash.path &&
+            currentRoute != Route.BusinessSetup.path &&
+            currentRoute != Route.Walkthrough.path
         val showBottomBar = currentRoute in bottomDestinations.map { it.route.path }
 
         fun runGated(check: suspend () -> FeatureGateResult, action: () -> Unit) {
@@ -132,7 +137,7 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                     OnboardingScreen(
                         onFinished = {
                             scope.launch {
-                                val destination = if (isBusinessSetupSatisfied()) Route.Dashboard.path else Route.BusinessSetup.path
+                                val destination = if (isBusinessSetupSatisfied()) resolvePostSetupDestination() else Route.BusinessSetup.path
                                 navController.navigate(destination) {
                                     popUpTo(Route.Onboarding.path) { inclusive = true }
                                 }
@@ -143,8 +148,32 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                 composable(Route.BusinessSetup.path) {
                     BusinessSetupScreen(
                         onFinished = {
-                            navController.navigate(Route.Dashboard.path) {
-                                popUpTo(Route.BusinessSetup.path) { inclusive = true }
+                            scope.launch {
+                                navController.navigate(resolvePostSetupDestination()) {
+                                    popUpTo(Route.BusinessSetup.path) { inclusive = true }
+                                }
+                            }
+                        }
+                    )
+                }
+                composable(
+                    route = Route.Walkthrough.path,
+                    arguments = listOf(navArgument("source") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    })
+                ) { entry ->
+                    val source = entry.arguments?.getString("source")
+                    WalkthroughScreen(
+                        onFinished = {
+                            if (source == "settings") {
+                                navController.popBackStack()
+                            } else {
+                                navController.navigate(Route.Dashboard.path) {
+                                    popUpTo(Route.Walkthrough.path) { inclusive = true }
+                                    launchSingleTop = true
+                                }
                             }
                         }
                     )
@@ -198,7 +227,8 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                         onDocumentSettings = { navController.navigate(Route.DocumentSettings.path) },
                         onReminderSettings = { navController.navigate(Route.ReminderSettings.path) },
                         onSubscription = { navController.navigate(paywallRoute("settings_subscription")) },
-                        onDataPrivacy = { navController.navigate(Route.DataPrivacy.path) }
+                        onDataPrivacy = { navController.navigate(Route.DataPrivacy.path) },
+                        onReplayWalkthrough = { navController.navigate(walkthroughRoute("settings")) }
                     )
                 }
                 composable(
@@ -638,6 +668,7 @@ fun ServiceSphereApp(initialJobId: String? = null) {
 private fun topBarTitle(route: String?): String = when (route) {
     Route.Dashboard.path -> "Dashboard"
     Route.BusinessSetup.path -> "Setup"
+    Route.Walkthrough.path -> "Walkthrough"
     Route.Jobs.path -> "Jobs"
     Route.Calendar.path -> "Calendar"
     Route.Clients.path -> "Clients"
@@ -673,9 +704,21 @@ private suspend fun resolveStartDestination(): String {
     return when {
         !hasCompletedOnboarding -> Route.Onboarding.path
         !hasCompletedBusinessSetup -> Route.BusinessSetup.path
-        else -> Route.Dashboard.path
+        else -> {
+            if (!ServiceLocator.preferences.hasSeenWalkthrough.first()) {
+                ServiceLocator.preferences.setWalkthroughSeen(true)
+            }
+            Route.Dashboard.path
+        }
     }
 }
+
+private suspend fun resolvePostSetupDestination(): String =
+    if (ServiceLocator.preferences.hasSeenWalkthrough.first()) {
+        Route.Dashboard.path
+    } else {
+        walkthroughRoute("setup")
+    }
 
 private suspend fun isBusinessSetupSatisfied(): Boolean {
     val preferenceComplete = ServiceLocator.preferences.hasCompletedBusinessSetup.first()
