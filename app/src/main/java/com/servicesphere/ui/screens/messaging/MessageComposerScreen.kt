@@ -55,6 +55,7 @@ fun MessageComposerScreen(
     quoteId: String?,
     invoiceId: String?,
     onBack: () -> Unit,
+    onQuoteShared: () -> Unit,
     viewModel: MessageComposerViewModel = viewModel(
         factory = MessageComposerViewModel.Factory(
             ServiceLocator.businessRepository,
@@ -83,6 +84,11 @@ fun MessageComposerScreen(
         if (message != null) {
             snackbar.showSnackbar(message)
             viewModel.clearMessages()
+        }
+    }
+    LaunchedEffect(uiState.shareSuccessEventId) {
+        if (uiState.shareSuccessEventId != null && !uiState.quoteId.isNullOrBlank()) {
+            onQuoteShared()
         }
     }
 

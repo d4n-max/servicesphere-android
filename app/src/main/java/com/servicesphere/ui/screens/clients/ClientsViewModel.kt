@@ -32,6 +32,7 @@ data class ClientsUiState(
     val isLoading: Boolean = true,
     val searchQuery: String = "",
     val clients: List<ClientUiModel> = emptyList(),
+    val totalClients: Int = 0,
     val errorMessage: String? = null,
     val isEmpty: Boolean = true
 )
@@ -52,12 +53,14 @@ class ClientsViewModel(
                 errorMessage.value = error.message ?: "Unable to load clients"
                 emit(emptyList())
             },
+        clientRepository.observeClientCount(),
         errorMessage
-    ) { query, clients, error ->
+    ) { query, clients, totalClients, error ->
         ClientsUiState(
             isLoading = false,
             searchQuery = query,
             clients = clients,
+            totalClients = totalClients,
             errorMessage = error,
             isEmpty = clients.isEmpty()
         )

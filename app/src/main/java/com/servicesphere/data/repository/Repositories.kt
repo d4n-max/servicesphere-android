@@ -152,4 +152,5 @@ class SignatureRepository(private val dao: SignatureDao) {
     suspend fun deleteSignature(signature: SignatureEntity) = dao.deleteSignature(signature)
     suspend fun getSignatureByIdOnce(signatureId: String): SignatureEntity? = dao.getSignatureByIdOnce(signatureId)
     fun observeSignaturesThisMonth(start: Long, end: Long): Flow<Int> = dao.observeSignaturesThisMonth(start, end)
+    suspend fun getAllSignaturesOnce(): List<SignatureEntity> = dao.getAllSignaturesOnce()
 }

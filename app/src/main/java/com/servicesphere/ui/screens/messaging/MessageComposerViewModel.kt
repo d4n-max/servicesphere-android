@@ -42,7 +42,8 @@ data class MessageComposerUiState(
     val subject: String = "ServiceSphere message",
     val message: String = "",
     val errorMessage: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val shareSuccessEventId: Long? = null
 )
 
 class MessageComposerViewModel(
@@ -92,23 +93,31 @@ class MessageComposerViewModel(
 
     fun onMessageChanged(value: String) = _uiState.update { it.copy(message = value) }
 
-    fun shareMessage() = runShareAction { shareManager.sharePlainText(uiState.value.message) }
+    fun shareMessage() = runShareAction(success = "Message shared", countsForReview = true) { shareManager.sharePlainText(uiState.value.message) }
 
-    fun sendSms() = runShareAction { shareManager.sendSms(uiState.value.clientPhone, uiState.value.message) }
+    fun sendSms() = runShareAction(success = "Message shared", countsForReview = true) { shareManager.sendSms(uiState.value.clientPhone, uiState.value.message) }
 
-    fun sendEmail() = runShareAction { shareManager.sendEmail(uiState.value.clientEmail, uiState.value.subject, uiState.value.message) }
+    fun sendEmail() = runShareAction(success = "Message shared", countsForReview = true) { shareManager.sendEmail(uiState.value.clientEmail, uiState.value.subject, uiState.value.message) }
 
     fun copyToClipboard() = runShareAction(success = "Message copied") { shareManager.copyToClipboard(uiState.value.message) }
 
     fun clearMessages() = _uiState.update { it.copy(errorMessage = null, successMessage = null) }
 
-    private fun runShareAction(success: String? = null, action: () -> Result<Unit>) {
+    private fun runShareAction(success: String? = null, countsForReview: Boolean = false, action: () -> Result<Unit>) {
         if (uiState.value.message.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Write a message before sharing.", successMessage = null) }
             return
         }
         action()
-            .onSuccess { _uiState.update { it.copy(errorMessage = null, successMessage = success) } }
+            .onSuccess {
+                _uiState.update {
+                    it.copy(
+                        errorMessage = null,
+                        successMessage = success,
+                        shareSuccessEventId = if (countsForReview) System.currentTimeMillis() else it.shareSuccessEventId
+                    )
+                }
+            }
             .onFailure { error -> _uiState.update { it.copy(errorMessage = error.message ?: "No app found to send this message", successMessage = null) } }
     }
 

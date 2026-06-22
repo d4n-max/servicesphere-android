@@ -24,8 +24,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import java.util.UUID
 
 data class ClientPickerUiModel(
@@ -41,8 +41,13 @@ data class JobFormUiState(
     val title: String = "",
     val description: String = "",
     val address: String = "",
+    val selectedDateMillis: Long? = null,
+    val selectedHour: Int? = null,
+    val selectedMinute: Int? = null,
     val scheduledDateText: String = "",
     val scheduledTimeText: String = "",
+    val scheduledDateDisplay: String = "",
+    val scheduledTimeDisplay: String = "",
     val scheduledAt: Long? = null,
     val status: String = JobStatus.NEW,
     val estimatedPrice: String = "",
@@ -76,6 +81,8 @@ class JobFormViewModel(
     private val _uiState = MutableStateFlow(JobFormUiState())
     val uiState: StateFlow<JobFormUiState> = _uiState.asStateFlow()
     private val zoneId = ZoneId.systemDefault()
+    private val displayDateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
+    private val displayTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     private var defaultReminderType: String = ReminderTypes.NONE
     private var userChangedReminder = false
 
@@ -122,7 +129,15 @@ class JobFormViewModel(
                     } else {
                         val dateTime = job.scheduledAt?.let { millis ->
                             val zoned = java.time.Instant.ofEpochMilli(millis).atZone(zoneId)
-                            zoned.toLocalDate().toString() to zoned.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+                            val date = zoned.toLocalDate()
+                            val time = zoned.toLocalTime()
+                            LoadedSchedule(
+                                dateMillis = date.toPickerMillis(),
+                                hour = time.hour,
+                                minute = time.minute,
+                                dateDisplay = date.format(displayDateFormatter),
+                                timeDisplay = time.format(displayTimeFormatter)
+                            )
                         }
                         _uiState.update {
                             val reminder = reminderRepository.getFirstReminderForJobOnce(job.id)
@@ -132,8 +147,13 @@ class JobFormViewModel(
                                 title = job.title,
                                 description = job.description.orEmpty(),
                                 address = job.address.orEmpty(),
-                                scheduledDateText = dateTime?.first.orEmpty(),
-                                scheduledTimeText = dateTime?.second.orEmpty(),
+                                selectedDateMillis = dateTime?.dateMillis,
+                                selectedHour = dateTime?.hour,
+                                selectedMinute = dateTime?.minute,
+                                scheduledDateText = dateTime?.dateDisplay.orEmpty(),
+                                scheduledTimeText = dateTime?.timeDisplay.orEmpty(),
+                                scheduledDateDisplay = dateTime?.dateDisplay.orEmpty(),
+                                scheduledTimeDisplay = dateTime?.timeDisplay.orEmpty(),
                                 scheduledAt = job.scheduledAt,
                                 status = job.status,
                                 estimatedPrice = job.estimatedPrice?.toString().orEmpty(),
@@ -166,25 +186,65 @@ class JobFormViewModel(
     fun onTitleChanged(value: String) = _uiState.update { it.copy(title = value, titleError = null) }
     fun onDescriptionChanged(value: String) = _uiState.update { it.copy(description = value) }
     fun onAddressChanged(value: String) = _uiState.update { it.copy(address = value) }
-    fun onScheduledDateChanged(value: String) {
-        _uiState.update { it.copy(scheduledDateText = value, scheduleError = null) }
+    fun onScheduledDatePicked(dateMillis: Long) {
+        _uiState.update { state ->
+            val date = dateMillis.toPickerLocalDate()
+            val hour = state.selectedHour ?: DEFAULT_SCHEDULE_HOUR
+            val minute = state.selectedMinute ?: DEFAULT_SCHEDULE_MINUTE
+            state.withSchedule(date, hour, minute)
+        }
         applyDefaultReminderIfReady()
     }
-    fun onScheduledTimeChanged(value: String) {
-        _uiState.update { it.copy(scheduledTimeText = value, scheduleError = null) }
+    fun onScheduledTimePicked(hour: Int, minute: Int) {
+        _uiState.update { state ->
+            val date = state.selectedDateMillis?.toPickerLocalDate() ?: LocalDate.now(zoneId)
+            state.withSchedule(date, hour, minute)
+        }
         applyDefaultReminderIfReady()
+    }
+    fun clearSchedule() {
+        _uiState.update {
+            it.copy(
+                selectedDateMillis = null,
+                selectedHour = null,
+                selectedMinute = null,
+                scheduledDateText = "",
+                scheduledTimeText = "",
+                scheduledDateDisplay = "",
+                scheduledTimeDisplay = "",
+                scheduledAt = null,
+                scheduleError = null,
+                reminderType = ReminderTypes.NONE,
+                reminderEnabled = false,
+                reminderError = null
+            )
+        }
+    }
+    fun recalculateScheduledAt() {
+        _uiState.update { state ->
+            val date = state.selectedDateMillis?.toPickerLocalDate() ?: return@update state.copy(scheduledAt = null)
+            val hour = state.selectedHour ?: DEFAULT_SCHEDULE_HOUR
+            val minute = state.selectedMinute ?: DEFAULT_SCHEDULE_MINUTE
+            state.withSchedule(date, hour, minute)
+        }
     }
     fun onStatusChanged(value: String) = _uiState.update { it.copy(status = value) }
     fun onEstimatedPriceChanged(value: String) = _uiState.update { it.copy(estimatedPrice = value, estimatedPriceError = null) }
     fun onInternalNotesChanged(value: String) = _uiState.update { it.copy(internalNotes = value) }
     fun onReminderTypeChanged(value: String) {
         userChangedReminder = true
-        _uiState.update { it.copy(reminderType = value, reminderError = null) }
+        _uiState.update {
+            if (it.scheduledAt == null && value != ReminderTypes.NONE) {
+                it.copy(reminderType = ReminderTypes.NONE, reminderError = "Add a schedule to enable reminders")
+            } else {
+                it.copy(reminderType = value, reminderError = null)
+            }
+        }
     }
 
     fun saveJob() {
         val current = _uiState.value
-        logSave("Save Job tapped. editing=${current.isEditing}, reminder=${current.reminderType}, hasDate=${current.scheduledDateText.isNotBlank()}, hasTime=${current.scheduledTimeText.isNotBlank()}, hasPrice=${current.estimatedPrice.isNotBlank()}")
+        logSave("Save Job tapped. editing=${current.isEditing}, reminder=${current.reminderType}, hasSchedule=${current.scheduledAt != null}, hasPrice=${current.estimatedPrice.isNotBlank()}")
         val titleError = if (current.title.trim().isBlank()) "Job title is required" else null
         val price = current.estimatedPrice.trim().takeIf { it.isNotBlank() }?.toDoubleOrNull()
         val priceError = when {
@@ -192,9 +252,8 @@ class JobFormViewModel(
             price == null || price < 0.0 -> "Enter a valid price"
             else -> null
         }
-        val scheduleResult = parseSchedule(current.scheduledDateText.trim(), current.scheduledTimeText.trim())
-        val parsedSchedule = scheduleResult.getOrNull()
-        val scheduleError = scheduleResult.exceptionOrNull()?.message
+        val parsedSchedule = current.scheduledAt
+        val scheduleError: String? = null
         val reminderError = when {
             current.reminderType == ReminderTypes.NONE -> null
             parsedSchedule == null -> "Add a schedule to enable reminders"
@@ -280,26 +339,38 @@ class JobFormViewModel(
         reminderScheduler.schedule(reminder)
     }
 
-    private fun parseSchedule(dateText: String, timeText: String): Result<Long?> {
-        if (dateText.isBlank() && timeText.isBlank()) return Result.success(null)
-        if (dateText.isBlank()) return Result.failure(IllegalArgumentException("Add a date or clear the scheduled time"))
-        return try {
-            val date = LocalDate.parse(dateText)
-            val time = if (timeText.isBlank()) LocalTime.of(9, 0) else LocalTime.parse(timeText)
-            Result.success(date.atTime(time).atZone(zoneId).toInstant().toEpochMilli())
-        } catch (_: DateTimeParseException) {
-            Result.failure(IllegalArgumentException("Use date YYYY-MM-DD and time HH:MM"))
-        }
-    }
-
     private fun applyDefaultReminderIfReady() {
         val current = _uiState.value
         if (userChangedReminder || defaultReminderType == ReminderTypes.NONE || current.reminderType != ReminderTypes.NONE) return
-        val hasValidSchedule = parseSchedule(current.scheduledDateText.trim(), current.scheduledTimeText.trim()).getOrNull() != null
-        if (hasValidSchedule) {
+        if (current.scheduledAt != null) {
             _uiState.update { it.copy(reminderType = defaultReminderType) }
         }
     }
+
+    private fun JobFormUiState.withSchedule(date: LocalDate, hour: Int, minute: Int): JobFormUiState {
+        val safeTime = LocalTime.of(hour.coerceIn(0, 23), minute.coerceIn(0, 59))
+        val scheduledMillis = date.atTime(safeTime).atZone(zoneId).toInstant().toEpochMilli()
+        val dateDisplay = date.format(displayDateFormatter)
+        val timeDisplay = safeTime.format(displayTimeFormatter)
+        return copy(
+            selectedDateMillis = date.toPickerMillis(),
+            selectedHour = safeTime.hour,
+            selectedMinute = safeTime.minute,
+            scheduledDateText = dateDisplay,
+            scheduledTimeText = timeDisplay,
+            scheduledDateDisplay = dateDisplay,
+            scheduledTimeDisplay = timeDisplay,
+            scheduledAt = scheduledMillis,
+            scheduleError = null,
+            reminderError = null
+        )
+    }
+
+    private fun LocalDate.toPickerMillis(): Long =
+        atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+
+    private fun Long.toPickerLocalDate(): LocalDate =
+        java.time.Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
 
     class Factory(
         private val jobRepository: JobRepository,
@@ -317,6 +388,16 @@ class JobFormViewModel(
 private fun ClientEntity.toPicker(): ClientPickerUiModel = ClientPickerUiModel(id = id, name = name, address = address)
 
 private const val TAG = "JobFormViewModel"
+private const val DEFAULT_SCHEDULE_HOUR = 9
+private const val DEFAULT_SCHEDULE_MINUTE = 0
+
+private data class LoadedSchedule(
+    val dateMillis: Long,
+    val hour: Int,
+    val minute: Int,
+    val dateDisplay: String,
+    val timeDisplay: String
+)
 
 private fun logSave(message: String) {
     if (BuildConfig.DEBUG) Log.d(TAG, message)

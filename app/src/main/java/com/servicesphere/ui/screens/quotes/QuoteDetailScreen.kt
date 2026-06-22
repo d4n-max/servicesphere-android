@@ -55,6 +55,7 @@ fun QuoteDetailScreen(
     onConvertedToInvoice: (String) -> Unit,
     onComposeMessage: (MessageTemplateType) -> Unit,
     onGateBlocked: (FeatureGateResult) -> Unit,
+    onQuoteShared: () -> Unit,
     viewModel: QuoteDetailViewModel = viewModel(
         factory = QuoteDetailViewModel.Factory(
             quoteId,
@@ -122,6 +123,9 @@ fun QuoteDetailScreen(
             pdfViewModel.clearPdfMessage()
         }
     }
+    LaunchedEffect(pdfState.quoteShareSuccessEventId) {
+        if (pdfState.quoteShareSuccessEventId != null) onQuoteShared()
+    }
 
     Column(Modifier.fillMaxSize()) {
         SnackbarHost(snackbar)
@@ -161,12 +165,26 @@ fun QuoteDetailScreen(
                             ServiceSphereOutlinedButton(
                                 if (pdfState.isGeneratingPdf) "Generating..." else "Generate PDF",
                                 Modifier.weight(1f),
-                                onClick = { if (!pdfState.isGeneratingPdf) pdfViewModel.generateQuotePdf() }
+                                onClick = {
+                                    if (!pdfState.isGeneratingPdf) {
+                                        scope.launch {
+                                            val gate = ServiceLocator.featureGateManager.canExportPdf()
+                                            if (gate.allowed) pdfViewModel.generateQuotePdf() else onGateBlocked(gate)
+                                        }
+                                    }
+                                }
                             )
                             ServiceSphereOutlinedButton(
                                 "Share PDF",
                                 Modifier.weight(1f),
-                                onClick = { if (!pdfState.isGeneratingPdf) pdfViewModel.shareQuotePdf() }
+                                onClick = {
+                                    if (!pdfState.isGeneratingPdf) {
+                                        scope.launch {
+                                            val gate = ServiceLocator.featureGateManager.canExportPdf()
+                                            if (gate.allowed) pdfViewModel.shareQuotePdf() else onGateBlocked(gate)
+                                        }
+                                    }
+                                }
                             )
                         }
                     }

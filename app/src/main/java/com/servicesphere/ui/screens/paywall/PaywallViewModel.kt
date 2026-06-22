@@ -1,6 +1,7 @@
 package com.servicesphere.ui.screens.paywall
 
 import android.app.Activity
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -8,6 +9,7 @@ import com.servicesphere.BuildConfig
 import com.servicesphere.billing.BillingResult
 import com.servicesphere.billing.FeatureGateManager
 import com.servicesphere.billing.LimitUsageSnapshot
+import com.servicesphere.billing.PaywallTrigger
 import com.servicesphere.billing.SubscriptionPackageUiModel
 import com.servicesphere.billing.SubscriptionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,11 +32,13 @@ data class PaywallUiState(
     val isRevenueCatConfigured: Boolean = false,
     val debugProEnabled: Boolean = false,
     val usage: LimitUsageSnapshot = LimitUsageSnapshot(),
+    val trigger: PaywallTrigger = PaywallTrigger.GENERIC,
 )
 
 class PaywallViewModel(
     private val subscriptionRepository: SubscriptionRepository,
-    private val featureGateManager: FeatureGateManager
+    private val featureGateManager: FeatureGateManager,
+    private val trigger: PaywallTrigger
 ) : ViewModel() {
     private val usage = MutableStateFlow(LimitUsageSnapshot())
     private val selectedPackageId = MutableStateFlow<String?>(null)
@@ -76,11 +80,13 @@ class PaywallViewModel(
             successMessage = success,
             isRevenueCatConfigured = sub.source != "not_configured",
             debugProEnabled = debugPro,
-            usage = usageSnapshot
+            usage = usageSnapshot,
+            trigger = trigger
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PaywallUiState())
 
     init {
+        log("paywall_viewed(${trigger.routeValue})")
         loadPaywall()
         refreshUsage()
     }
@@ -110,12 +116,17 @@ class PaywallViewModel(
             errorMessage.value = "Select a subscription package first."
             return
         }
+        log("purchase_started(${selected.id})")
         viewModelScope.launch {
             isPurchasing.value = true
             when (val result = subscriptionRepository.purchase(activity, selected.revenueCatPackage)) {
                 is BillingResult.Success -> {
-                    if (result.value.isPro) successMessage.value = "ServiceSphere Pro is active."
-                    else errorMessage.value = "Purchase completed, but Pro is not active yet."
+                    if (result.value.isPro) {
+                        log("purchase_success(${selected.id})")
+                        successMessage.value = "ServiceSphere Pro is active."
+                    } else {
+                        errorMessage.value = "Purchase completed, but Pro is not active yet."
+                    }
                     refreshUsage()
                 }
                 is BillingResult.Error -> errorMessage.value = result.message
@@ -126,10 +137,12 @@ class PaywallViewModel(
     }
 
     fun restorePurchases() {
+        log("restore_started")
         viewModelScope.launch {
             isRestoring.value = true
             when (val result = subscriptionRepository.restorePurchases()) {
                 is BillingResult.Success -> {
+                    log(if (result.value.isPro) "restore_success" else "restore_no_purchase")
                     successMessage.value = if (result.value.isPro) {
                         "ServiceSphere Pro restored."
                     } else {
@@ -145,6 +158,7 @@ class PaywallViewModel(
     }
 
     fun maybeLater(onMaybeLater: () -> Unit) {
+        log("paywall_dismissed(${trigger.routeValue})")
         onMaybeLater()
     }
 
@@ -158,12 +172,17 @@ class PaywallViewModel(
         viewModelScope.launch { subscriptionRepository.setDebugProEnabled(value) }
     }
 
+    private fun log(event: String) {
+        if (BuildConfig.DEBUG) Log.d("Paywall", event)
+    }
+
     class Factory(
         private val subscriptionRepository: SubscriptionRepository,
-        private val featureGateManager: FeatureGateManager
+        private val featureGateManager: FeatureGateManager,
+        private val trigger: PaywallTrigger
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            PaywallViewModel(subscriptionRepository, featureGateManager) as T
+            PaywallViewModel(subscriptionRepository, featureGateManager, trigger) as T
     }
 }

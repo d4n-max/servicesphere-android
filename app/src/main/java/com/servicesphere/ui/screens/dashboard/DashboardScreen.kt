@@ -176,10 +176,10 @@ private fun DashboardContent(
         if (uiState.recentJobs.isEmpty()) {
             item {
                 EmptyState(
-                    title = "No jobs yet",
-                    message = "New and scheduled jobs will appear here as soon as you add them.",
+                    title = "Your jobs will show up here",
+                    message = "Create your first job to keep the client, address, notes, quote, and invoice in one place.",
                     icon = Icons.Filled.HomeRepairService,
-                    actionLabel = "New Job",
+                    actionLabel = "Create first job",
                     onAction = onNewJob
                 )
             }
@@ -201,9 +201,9 @@ private fun DashboardContent(
             item {
                 EmptyState(
                     title = "No invoices yet",
-                    message = "Invoices and payment status will show here once billing begins.",
+                    message = "When a job is ready to bill, turn the job details into an invoice.",
                     icon = Icons.AutoMirrored.Filled.ReceiptLong,
-                    actionLabel = "New Invoice",
+                    actionLabel = "Create invoice",
                     onAction = onNewInvoice
                 )
             }

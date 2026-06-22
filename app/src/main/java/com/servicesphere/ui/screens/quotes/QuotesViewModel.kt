@@ -57,6 +57,7 @@ data class QuotesUiState(
     val searchQuery: String = "",
     val selectedStatusFilter: String? = null,
     val quotes: List<QuoteUiModel> = emptyList(),
+    val totalQuotes: Int = 0,
     val errorMessage: String? = null,
     val isEmpty: Boolean = true
 )
@@ -92,7 +93,7 @@ class QuotesViewModel(
             .filter { filter == null || it.status == filter }
             .map { quote -> quote.toUiModel(clientMap[quote.clientId], jobMap[quote.jobId]) }
             .filter { it.matchesQuery(query) }
-        QuotesUiState(false, query, filter, rows, error, rows.isEmpty())
+        QuotesUiState(false, query, filter, rows, quotes.size, error, rows.isEmpty())
     }
         .catch { error -> emit(QuotesUiState(isLoading = false, errorMessage = error.message ?: "Unable to load quotes")) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), QuotesUiState())

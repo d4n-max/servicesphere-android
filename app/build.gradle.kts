@@ -15,7 +15,7 @@ android {
         applicationId = "com.servicesphere.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
+        versionCode = 4
         versionName = "1.0.0"
         val localProperties = Properties().apply {
             val file = rootProject.file("local.properties")
@@ -76,4 +76,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.revenuecat.purchases)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.play.review)
+    implementation(libs.play.review.ktx)
+    testImplementation(libs.junit)
 }

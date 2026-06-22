@@ -1,5 +1,12 @@
 package com.servicesphere.ui
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -11,21 +18,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.android.play.core.review.ReviewManagerFactory
+import com.servicesphere.BuildConfig
 import com.servicesphere.data.ServiceLocator
 import com.servicesphere.billing.FeatureGateResult
 import com.servicesphere.ui.components.ServiceSphereBottomBar
 import com.servicesphere.ui.components.ServiceSphereTopBar
+import com.servicesphere.ui.components.ReviewPromptDialog
+import com.servicesphere.review.ReviewSuccessMoment
 import com.servicesphere.ui.navigation.Route
 import com.servicesphere.ui.navigation.bottomDestinations
 import com.servicesphere.ui.navigation.captureSignatureRoute
 import com.servicesphere.ui.navigation.clientDetailRoute
 import com.servicesphere.ui.navigation.composeMessageRoute
+import com.servicesphere.ui.navigation.createFirstJobRoute
 import com.servicesphere.ui.navigation.createJobRoute
 import com.servicesphere.ui.navigation.createInvoiceRoute
 import com.servicesphere.ui.navigation.createQuoteRoute
@@ -52,6 +65,7 @@ import com.servicesphere.ui.screens.jobs.JobFormScreen
 import com.servicesphere.ui.screens.jobs.JobsScreen
 import com.servicesphere.ui.screens.jobs.JobsViewMode
 import com.servicesphere.ui.screens.messaging.MessageComposerScreen
+import com.servicesphere.ui.screens.onboarding.FirstJobScreen
 import com.servicesphere.ui.screens.onboarding.OnboardingScreen
 import com.servicesphere.ui.screens.onboarding.WalkthroughScreen
 import com.servicesphere.ui.screens.paywall.PaywallScreen
@@ -76,11 +90,13 @@ import kotlinx.coroutines.launch
 fun ServiceSphereApp(initialJobId: String? = null) {
     ServiceSphereTheme {
         val navController = rememberNavController()
+        val context = LocalContext.current
         val backStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = backStackEntry?.destination
         val currentRoute = currentDestination?.route
         val scope = rememberCoroutineScope()
         var blockedGate by remember { mutableStateOf<FeatureGateResult?>(null) }
+        var showReviewPrompt by remember { mutableStateOf(false) }
         var handledInitialJobId by remember { mutableStateOf(false) }
         val showTopBar = currentRoute != Route.Onboarding.path &&
             currentRoute != Route.Splash.path &&
@@ -93,6 +109,18 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                 val result = check()
                 if (result.allowed) action() else blockedGate = result
             }
+        }
+
+        fun recordReviewMoment(moment: ReviewSuccessMoment) {
+            scope.launch {
+                if (ServiceLocator.reviewPromptManager.recordSuccessMoment(moment)) {
+                    showReviewPrompt = true
+                }
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            ServiceLocator.reviewPromptManager.markAppSessionStarted()
         }
 
         Scaffold(
@@ -135,14 +163,33 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                 }
                 composable(Route.Onboarding.path) {
                     OnboardingScreen(
-                        onFinished = {
-                            scope.launch {
-                                val destination = if (isBusinessSetupSatisfied()) resolvePostSetupDestination() else Route.BusinessSetup.path
-                                navController.navigate(destination) {
-                                    popUpTo(Route.Onboarding.path) { inclusive = true }
-                                }
+                        onCreateFirstJob = {
+                            navController.navigate(createFirstJobRoute()) {
+                                popUpTo(Route.Onboarding.path) { inclusive = true }
+                            }
+                        },
+                        onExploreSampleJob = {
+                            navController.navigate(createFirstJobRoute(sample = true)) {
+                                popUpTo(Route.Onboarding.path) { inclusive = true }
                             }
                         }
+                    )
+                }
+                composable(
+                    route = Route.CreateFirstJob.path,
+                    arguments = listOf(navArgument("sample") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    })
+                ) { entry ->
+                    FirstJobScreen(
+                        startWithSample = entry.arguments?.getBoolean("sample") == true,
+                        onJobCreated = { jobId, sample ->
+                            navController.navigate(jobDetailRoute(jobId, sample = sample)) {
+                                popUpTo(Route.CreateFirstJob.path) { inclusive = true }
+                            }
+                        },
+                        onBack = { navController.popBackStack() }
                     )
                 }
                 composable(Route.BusinessSetup.path) {
@@ -306,7 +353,8 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                         jobId = entry.arguments?.getString("jobId"),
                         quoteId = entry.arguments?.getString("quoteId"),
                         invoiceId = entry.arguments?.getString("invoiceId"),
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStack() },
+                        onQuoteShared = { recordReviewMoment(ReviewSuccessMoment.QUOTE_SHARED) }
                     )
                 }
                 composable(
@@ -330,9 +378,16 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                 }
                 composable(
                     route = Route.JobDetail.path,
-                    arguments = listOf(navArgument("jobId") { type = NavType.StringType })
+                    arguments = listOf(
+                        navArgument("jobId") { type = NavType.StringType },
+                        navArgument("sample") {
+                            type = NavType.BoolType
+                            defaultValue = false
+                        }
+                    )
                 ) { entry ->
                     val jobId = entry.arguments?.getString("jobId")
+                    val isSampleJob = entry.arguments?.getBoolean("sample") == true
                     if (jobId.isNullOrBlank()) {
                         QuickActionPlaceholderScreen(
                             title = "Job not found",
@@ -353,7 +408,17 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                             onCreateInvoice = { runGated(ServiceLocator.featureGateManager::canCreateInvoice) { navController.navigate(createInvoiceRoute(jobId = jobId)) } },
                             onComposeMessage = { type -> navController.navigate(composeMessageRoute(type.routeValue, jobId = jobId)) },
                             onCaptureSignature = { runGated(ServiceLocator.featureGateManager::canCaptureSignature) { navController.navigate(captureSignatureRoute(jobId = jobId)) } },
-                            onPhotoGateBlocked = { blockedGate = it }
+                            onPhotoGateBlocked = { blockedGate = it },
+                            onJobCompleted = { recordReviewMoment(ReviewSuccessMoment.JOB_COMPLETED) },
+                            isSampleJob = isSampleJob,
+                            onCreateRealFirstJob = {
+                                ServiceLocator.activationTracker.track(com.servicesphere.activation.ActivationEvents.ONBOARDING_DEMO_TO_REAL_JOB_STARTED)
+                                navController.navigate(createFirstJobRoute())
+                            },
+                            onBusinessSetup = {
+                                ServiceLocator.activationTracker.track(com.servicesphere.activation.ActivationEvents.BUSINESS_SETUP_STARTED)
+                                navController.navigate(Route.BusinessSetup.path)
+                            }
                         )
                     }
                 }
@@ -493,7 +558,8 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                             },
                             onConvertedToInvoice = { invoiceId -> navController.navigate(invoiceDetailRoute(invoiceId)) },
                             onComposeMessage = { type -> navController.navigate(composeMessageRoute(type.routeValue, quoteId = quoteId)) },
-                            onGateBlocked = { blockedGate = it }
+                            onGateBlocked = { blockedGate = it },
+                            onQuoteShared = { recordReviewMoment(ReviewSuccessMoment.QUOTE_SHARED) }
                         )
                     }
                 }
@@ -548,6 +614,7 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                         preselectedJobId = entry.arguments?.getString("jobId"),
                         preselectedQuoteId = entry.arguments?.getString("quoteId"),
                         onSaved = { invoiceId ->
+                            recordReviewMoment(ReviewSuccessMoment.INVOICE_CREATED)
                             navController.navigate(invoiceDetailRoute(invoiceId)) {
                                 popUpTo(Route.Invoices.path)
                             }
@@ -577,7 +644,8 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                                 }
                             },
                             onComposeMessage = { type -> navController.navigate(composeMessageRoute(type.routeValue, invoiceId = invoiceId)) },
-                            onCaptureSignature = { runGated(ServiceLocator.featureGateManager::canCaptureSignature) { navController.navigate(captureSignatureRoute(invoiceId = invoiceId)) } }
+                            onCaptureSignature = { runGated(ServiceLocator.featureGateManager::canCaptureSignature) { navController.navigate(captureSignatureRoute(invoiceId = invoiceId)) } },
+                            onGateBlocked = { blockedGate = it }
                         )
                     }
                 }
@@ -628,6 +696,7 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                         jobId = jobId,
                         invoiceId = invoiceId,
                         onSaved = {
+                            recordReviewMoment(ReviewSuccessMoment.SIGNATURE_COLLECTED)
                             when {
                                 !invoiceId.isNullOrBlank() -> navController.navigate(invoiceDetailRoute(invoiceId)) {
                                     popUpTo(Route.CaptureSignature.path) { inclusive = true }
@@ -658,15 +727,98 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                 onDismiss = { blockedGate = null },
                 onUpgrade = {
                     blockedGate = null
-                    navController.navigate(paywallRoute(gate.featureName))
+                    navController.navigate(paywallRoute(gate.trigger.routeValue))
+                }
+            )
+        }
+        if (showReviewPrompt) {
+            ReviewPromptDialog(
+                onPositive = {
+                    showReviewPrompt = false
+                    scope.launch {
+                        ServiceLocator.reviewPromptManager.markPositiveAttempt(BuildConfig.VERSION_NAME)
+                        launchPlayReviewOrStore(context)
+                    }
+                },
+                onFeedback = {
+                    showReviewPrompt = false
+                    scope.launch {
+                        ServiceLocator.reviewPromptManager.markPrivateFeedback(BuildConfig.VERSION_NAME)
+                        openPrivateFeedback(context)
+                    }
+                },
+                onDismiss = {
+                    showReviewPrompt = false
+                    scope.launch {
+                        ServiceLocator.reviewPromptManager.dismissPrompt()
+                    }
                 }
             )
         }
     }
 }
 
+private fun launchPlayReviewOrStore(context: Context) {
+    val activity = context.findActivity()
+    if (activity == null) {
+        openPlayStoreListing(context)
+        return
+    }
+    val manager = ReviewManagerFactory.create(context)
+    manager.requestReviewFlow()
+        .addOnCompleteListener { request ->
+            if (request.isSuccessful) {
+                manager.launchReviewFlow(activity, request.result)
+                    .addOnFailureListener { openPlayStoreListing(context) }
+            } else {
+                openPlayStoreListing(context)
+            }
+        }
+}
+
+private fun openPlayStoreListing(context: Context) {
+    val packageName = BuildConfig.APPLICATION_ID
+    val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    runCatching { context.startActivity(marketIntent) }
+        .onFailure {
+            runCatching { context.startActivity(browserIntent) }
+                .onFailure { Toast.makeText(context, "Unable to open Google Play.", Toast.LENGTH_SHORT).show() }
+        }
+}
+
+private fun openPrivateFeedback(context: Context) {
+    val body = """
+        Hi ServiceSphere team,
+
+        I have feedback about:
+
+
+        App version: ${BuildConfig.VERSION_NAME}
+        Device: ${Build.MANUFACTURER} ${Build.MODEL}
+        Android: ${Build.VERSION.RELEASE}
+    """.trimIndent()
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:support@example.com")
+        putExtra(Intent.EXTRA_SUBJECT, "ServiceSphere feedback")
+        putExtra(Intent.EXTRA_TEXT, body)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    runCatching { context.startActivity(intent) }
+        .onFailure { Toast.makeText(context, "No email app found for feedback.", Toast.LENGTH_SHORT).show() }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
 private fun topBarTitle(route: String?): String = when (route) {
     Route.Dashboard.path -> "Dashboard"
+    Route.CreateFirstJob.path -> "Create First Job"
     Route.BusinessSetup.path -> "Setup"
     Route.Walkthrough.path -> "Walkthrough"
     Route.Jobs.path -> "Jobs"
@@ -700,10 +852,8 @@ private fun topBarTitle(route: String?): String = when (route) {
 
 private suspend fun resolveStartDestination(): String {
     val hasCompletedOnboarding = ServiceLocator.preferences.hasCompletedOnboarding.first()
-    val hasCompletedBusinessSetup = isBusinessSetupSatisfied()
     return when {
         !hasCompletedOnboarding -> Route.Onboarding.path
-        !hasCompletedBusinessSetup -> Route.BusinessSetup.path
         else -> {
             if (!ServiceLocator.preferences.hasSeenWalkthrough.first()) {
                 ServiceLocator.preferences.setWalkthroughSeen(true)

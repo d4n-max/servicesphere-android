@@ -76,6 +76,7 @@ data class JobsUiState(
     val selectedRange: CalendarRange = CalendarRange.TODAY,
     val selectedDateMillis: Long = System.currentTimeMillis(),
     val jobs: List<JobUiModel> = emptyList(),
+    val totalActiveJobs: Int = 0,
     val calendarJobs: List<JobUiModel> = emptyList(),
     val groupedCalendarJobs: Map<String, List<JobUiModel>> = emptyMap(),
     val calendarTitle: String = "Today",
@@ -123,6 +124,7 @@ class JobsViewModel(
             .filter { it.matchesQuery(query) }
             .filter { it.matchesFilter(filter) }
             .map { it.toUiModel(clientMap[it.clientId], it.id in reminderJobIds) }
+        val totalActiveJobs = jobs.count { it.status != JobStatus.CANCELLED }
         val calendarJobs = jobs
             .filter { it.scheduledAt != null }
             .filter { it.matchesCalendarRange(range, selectedDate) }
@@ -139,6 +141,7 @@ class JobsViewModel(
             selectedRange = range,
             selectedDateMillis = selectedDate,
             jobs = filtered,
+            totalActiveJobs = totalActiveJobs,
             calendarJobs = calendarJobs,
             groupedCalendarJobs = grouped,
             calendarTitle = calendarTitle(range, selectedDate),

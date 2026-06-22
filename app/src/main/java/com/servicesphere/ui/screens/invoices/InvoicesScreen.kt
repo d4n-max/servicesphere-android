@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.servicesphere.billing.FreePlanLimits
 import com.servicesphere.data.ServiceLocator
 import com.servicesphere.domain.model.InvoiceStatus
 import com.servicesphere.domain.model.PaymentMethod
@@ -77,7 +78,10 @@ fun InvoicesScreen(
         item { InvoiceFilterRow(uiState.selectedStatusFilter, viewModel::onStatusFilterChanged) }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("${uiState.invoices.size} invoices", fontWeight = FontWeight.Bold)
+                Column {
+                    Text("${uiState.invoices.size} invoices", fontWeight = FontWeight.Bold)
+                    Text("${uiState.totalInvoices} of ${FreePlanLimits.maxInvoices} free invoices used", color = ServiceSphereTextSecondary)
+                }
                 ServiceSphereButton("Create Invoice", Modifier.weight(1f), onClick = onAddInvoice)
             }
         }
@@ -86,9 +90,9 @@ fun InvoicesScreen(
             uiState.invoices.isEmpty() && uiState.searchQuery.isBlank() && uiState.selectedStatusFilter == null -> item {
                 EmptyState(
                     title = "No invoices yet",
-                    message = "Create your first invoice and keep track of what clients owe you.",
+                    message = "When a job is ready to bill, turn the job details into an invoice.",
                     icon = Icons.AutoMirrored.Filled.ReceiptLong,
-                    actionLabel = "Create Invoice",
+                    actionLabel = "Create invoice",
                     onAction = onAddInvoice
                 )
             }

@@ -3,6 +3,7 @@ package com.servicesphere.data.preferences
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -23,6 +24,14 @@ class UserPreferences(context: Context) {
     private val debugProEnabledKey = booleanPreferencesKey("debug_is_pro_enabled")
     private val defaultJobReminderTypeKey = stringPreferencesKey("default_job_reminder_type")
     private val autoDisableCompletedJobRemindersKey = booleanPreferencesKey("auto_disable_completed_job_reminders")
+    private val reviewHasSeenPromptKey = booleanPreferencesKey("review_has_seen_prompt")
+    private val reviewLastPromptAtKey = longPreferencesKey("review_last_prompt_at")
+    private val reviewDismissCountKey = intPreferencesKey("review_dismiss_count")
+    private val reviewSuccessMomentsCountKey = intPreferencesKey("review_success_moments_count")
+    private val reviewLastPromptedAppVersionKey = stringPreferencesKey("review_last_prompted_app_version")
+    private val appSessionCountKey = intPreferencesKey("app_session_count")
+    private val firstRealJobCreatedKey = booleanPreferencesKey("first_real_job_created")
+    private val sampleJobIdKey = stringPreferencesKey("sample_job_id")
 
     val hasCompletedOnboarding: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[onboardingCompleteKey] ?: false
@@ -62,6 +71,25 @@ class UserPreferences(context: Context) {
 
     val autoDisableCompletedJobReminders: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[autoDisableCompletedJobRemindersKey] ?: true
+    }
+
+    val reviewPromptSnapshot: Flow<ReviewPromptPreferenceSnapshot> = dataStore.data.map { preferences ->
+        ReviewPromptPreferenceSnapshot(
+            hasSeenReviewPrompt = preferences[reviewHasSeenPromptKey] ?: false,
+            lastReviewPromptAt = preferences[reviewLastPromptAtKey],
+            reviewPromptDismissCount = preferences[reviewDismissCountKey] ?: 0,
+            completedSuccessMomentsCount = preferences[reviewSuccessMomentsCountKey] ?: 0,
+            lastPromptedAppVersion = preferences[reviewLastPromptedAppVersionKey],
+            appSessionCount = preferences[appSessionCountKey] ?: 0
+        )
+    }
+
+    val hasCreatedFirstRealJob: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[firstRealJobCreatedKey] ?: false
+    }
+
+    val sampleJobId: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[sampleJobIdKey]
     }
 
     suspend fun setOnboardingComplete(value: Boolean) {
@@ -125,6 +153,45 @@ class UserPreferences(context: Context) {
         }
     }
 
+    suspend fun incrementAppSessionCount() {
+        dataStore.edit { preferences ->
+            preferences[appSessionCountKey] = (preferences[appSessionCountKey] ?: 0) + 1
+        }
+    }
+
+    suspend fun incrementReviewSuccessMoments() {
+        dataStore.edit { preferences ->
+            preferences[reviewSuccessMomentsCountKey] = (preferences[reviewSuccessMomentsCountKey] ?: 0) + 1
+        }
+    }
+
+    suspend fun markReviewPromptAttempted(timestampMillis: Long, appVersion: String) {
+        dataStore.edit { preferences ->
+            preferences[reviewHasSeenPromptKey] = true
+            preferences[reviewLastPromptAtKey] = timestampMillis
+            preferences[reviewLastPromptedAppVersionKey] = appVersion
+        }
+    }
+
+    suspend fun dismissReviewPrompt(timestampMillis: Long) {
+        dataStore.edit { preferences ->
+            preferences[reviewLastPromptAtKey] = timestampMillis
+            preferences[reviewDismissCountKey] = (preferences[reviewDismissCountKey] ?: 0) + 1
+        }
+    }
+
+    suspend fun setFirstRealJobCreated(value: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[firstRealJobCreatedKey] = value
+        }
+    }
+
+    suspend fun setSampleJobId(jobId: String?) {
+        dataStore.edit { preferences ->
+            if (jobId.isNullOrBlank()) preferences.remove(sampleJobIdKey) else preferences[sampleJobIdKey] = jobId
+        }
+    }
+
     suspend fun resetSetupState() {
         dataStore.edit { preferences ->
             preferences[onboardingCompleteKey] = false
@@ -136,3 +203,12 @@ class UserPreferences(context: Context) {
         }
     }
 }
+
+data class ReviewPromptPreferenceSnapshot(
+    val hasSeenReviewPrompt: Boolean,
+    val lastReviewPromptAt: Long?,
+    val reviewPromptDismissCount: Int,
+    val completedSuccessMomentsCount: Int,
+    val lastPromptedAppVersion: String?,
+    val appSessionCount: Int
+)

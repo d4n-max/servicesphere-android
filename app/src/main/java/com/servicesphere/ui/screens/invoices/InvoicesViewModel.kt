@@ -67,6 +67,7 @@ data class InvoicesUiState(
     val searchQuery: String = "",
     val selectedStatusFilter: String? = null,
     val invoices: List<InvoiceUiModel> = emptyList(),
+    val totalInvoices: Int = 0,
     val errorMessage: String? = null,
     val isEmpty: Boolean = true
 )
@@ -105,7 +106,7 @@ class InvoicesViewModel(
             .map { invoice -> invoice.toUiModel(clientMap[invoice.clientId], jobMap[invoice.jobId], quoteMap[invoice.quoteId]) }
             .filter { filter == null || it.effectiveStatus() == filter }
             .filter { it.matchesQuery(query) }
-        InvoicesUiState(false, query, filter, invoices, error, invoices.isEmpty())
+        InvoicesUiState(false, query, filter, invoices, rows.invoices.size, error, invoices.isEmpty())
     }
         .catch { error -> emit(InvoicesUiState(isLoading = false, errorMessage = error.message ?: "Unable to load invoices")) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InvoicesUiState())

@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.servicesphere.data.ServiceLocator
 import com.servicesphere.data.local.SignatureImageStorage
+import com.servicesphere.billing.FeatureGateResult
 import com.servicesphere.domain.model.InvoiceStatus
 import com.servicesphere.messaging.MessageTemplateType
 import com.servicesphere.pdf.PdfShareManager
@@ -47,6 +49,7 @@ import com.servicesphere.ui.screens.pdf.InvoicePdfActionViewModel
 import com.servicesphere.ui.theme.ServiceSphereDanger
 import com.servicesphere.ui.theme.ServiceSphereTextSecondary
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 
 @Composable
 fun InvoiceDetailScreen(
@@ -56,6 +59,7 @@ fun InvoiceDetailScreen(
     onDeleted: () -> Unit,
     onComposeMessage: (MessageTemplateType) -> Unit,
     onCaptureSignature: () -> Unit,
+    onGateBlocked: (FeatureGateResult) -> Unit,
     viewModel: InvoiceDetailViewModel = viewModel(
         factory = InvoiceDetailViewModel.Factory(
             invoiceId,
@@ -101,6 +105,7 @@ fun InvoiceDetailScreen(
     var showPaidDialog by remember { mutableStateOf(false) }
     var signatureToDelete by remember { mutableStateOf<SignatureUiModel?>(null) }
     val snackbar = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(uiState.deleteSuccess) {
         if (uiState.deleteSuccess) onDeleted()
@@ -171,12 +176,26 @@ fun InvoiceDetailScreen(
                             ServiceSphereOutlinedButton(
                                 if (pdfState.isGeneratingPdf) "Generating..." else "Generate PDF",
                                 Modifier.weight(1f),
-                                onClick = { if (!pdfState.isGeneratingPdf) pdfViewModel.generateInvoicePdf() }
+                                onClick = {
+                                    if (!pdfState.isGeneratingPdf) {
+                                        scope.launch {
+                                            val gate = ServiceLocator.featureGateManager.canExportPdf()
+                                            if (gate.allowed) pdfViewModel.generateInvoicePdf() else onGateBlocked(gate)
+                                        }
+                                    }
+                                }
                             )
                             ServiceSphereOutlinedButton(
                                 "Share PDF",
                                 Modifier.weight(1f),
-                                onClick = { if (!pdfState.isGeneratingPdf) pdfViewModel.shareInvoicePdf() }
+                                onClick = {
+                                    if (!pdfState.isGeneratingPdf) {
+                                        scope.launch {
+                                            val gate = ServiceLocator.featureGateManager.canExportPdf()
+                                            if (gate.allowed) pdfViewModel.shareInvoicePdf() else onGateBlocked(gate)
+                                        }
+                                    }
+                                }
                             )
                         }
                     }

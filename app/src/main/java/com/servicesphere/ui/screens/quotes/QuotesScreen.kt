@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.servicesphere.billing.FreePlanLimits
 import com.servicesphere.data.ServiceLocator
 import com.servicesphere.ui.components.EmptyState
 import com.servicesphere.ui.components.ScreenHeader
@@ -79,7 +80,10 @@ fun QuotesScreen(
             }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("${uiState.quotes.size} quotes", style = MaterialTheme.typography.labelLarge, color = ServiceSphereTextSecondary)
+                    Column {
+                        Text("${uiState.quotes.size} quotes", style = MaterialTheme.typography.labelLarge, color = ServiceSphereTextSecondary)
+                        Text("${uiState.totalQuotes} of ${FreePlanLimits.maxQuotes} free quotes used", style = MaterialTheme.typography.bodySmall, color = ServiceSphereTextSecondary)
+                    }
                     StatusChip(uiState.selectedStatusFilter?.toDisplayStatus() ?: "All", StatusTone.Info)
                 }
             }
@@ -91,9 +95,9 @@ fun QuotesScreen(
                 uiState.quotes.isEmpty() && uiState.searchQuery.isBlank() && uiState.selectedStatusFilter == null -> item {
                     EmptyState(
                         title = "No quotes yet",
-                        message = "Create a quote first, then convert it into an invoice when approved.",
+                        message = "Build a simple quote from a job and keep it attached to the client.",
                         icon = Icons.Filled.Description,
-                        actionLabel = "Create Quote",
+                        actionLabel = "Create quote",
                         onAction = onAddQuote
                     )
                 }

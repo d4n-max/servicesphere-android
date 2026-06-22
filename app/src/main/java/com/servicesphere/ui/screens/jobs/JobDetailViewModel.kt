@@ -9,6 +9,9 @@ import com.servicesphere.data.repository.JobRepository
 import com.servicesphere.domain.model.JobStatus
 import com.servicesphere.reminders.JobReminderScheduler
 import com.servicesphere.reminders.ReminderTypes
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -35,6 +38,8 @@ class JobDetailViewModel(
 ) : ViewModel() {
     private val errorMessage = MutableStateFlow<String?>(null)
     private val deleteSuccess = MutableStateFlow(false)
+    private val _statusUpdateEvents = MutableSharedFlow<String>()
+    val statusUpdateEvents: SharedFlow<String> = _statusUpdateEvents.asSharedFlow()
 
     val uiState: StateFlow<JobDetailUiState> = combine(
         jobRepository.observeJobById(jobId),
@@ -71,6 +76,7 @@ class JobDetailViewModel(
                     reminderRepository.getFirstReminderForJobOnce(jobId)?.let { reminderScheduler.cancel(it.id) }
                     reminderRepository.disableRemindersForJob(jobId)
                 }
+                _statusUpdateEvents.emit(status)
             }.onFailure { error ->
                 errorMessage.value = error.message ?: "Unable to update status"
             }

@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 sealed class Route(val path: String) {
     data object Splash : Route("splash")
     data object Onboarding : Route("onboarding")
+    data object CreateFirstJob : Route("create_first_job?sample={sample}")
     data object BusinessSetup : Route("business_setup")
     data object Walkthrough : Route("walkthrough?source={source}")
     data object Dashboard : Route("dashboard")
@@ -29,7 +30,7 @@ sealed class Route(val path: String) {
     data object ComposeMessage : Route("compose_message?type={type}&clientId={clientId}&jobId={jobId}&quoteId={quoteId}&invoiceId={invoiceId}")
     data object Paywall : Route("paywall?source={source}")
     data object CreateJob : Route("create_job?clientId={clientId}")
-    data object JobDetail : Route("job_detail/{jobId}")
+    data object JobDetail : Route("job_detail/{jobId}?sample={sample}")
     data object EditJob : Route("edit_job/{jobId}")
     data object CreateClient : Route("create_client")
     data object ClientDetail : Route("client_detail/{clientId}")
@@ -50,7 +51,11 @@ fun editClientRoute(clientId: String): String = "edit_client/$clientId"
 fun createJobRoute(clientId: String? = null): String =
     if (clientId.isNullOrBlank()) "create_job" else "create_job?clientId=$clientId"
 
-fun jobDetailRoute(jobId: String): String = "job_detail/$jobId"
+fun createFirstJobRoute(sample: Boolean = false): String =
+    if (sample) "create_first_job?sample=true" else "create_first_job"
+
+fun jobDetailRoute(jobId: String, sample: Boolean = false): String =
+    if (sample) "job_detail/$jobId?sample=true" else "job_detail/$jobId"
 
 fun editJobRoute(jobId: String): String = "edit_job/$jobId"
 

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -13,11 +14,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -50,7 +60,11 @@ import com.servicesphere.ui.components.ServiceSphereTextField
 import com.servicesphere.ui.components.StatusChip
 import com.servicesphere.ui.theme.ServiceSphereDanger
 import com.servicesphere.ui.theme.ServiceSphereTextSecondary
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneOffset
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobFormScreen(
     jobId: String?,
@@ -74,6 +88,8 @@ fun JobFormScreen(
     var showClientDialog by remember { mutableStateOf(false) }
     var showStatusDialog by remember { mutableStateOf(false) }
     var showReminderDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         viewModel.onNotificationPermissionHandled()
     }
@@ -160,34 +176,32 @@ fun JobFormScreen(
                         )
                         ServiceSphereTextField(uiState.description, viewModel::onDescriptionChanged, "Description", minLines = 3, maxLines = 6)
                         ServiceSphereTextField(uiState.address, viewModel::onAddressChanged, "Service address", minLines = 2, maxLines = 4)
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            ServiceSphereTextField(
-                                uiState.scheduledDateText,
-                                viewModel::onScheduledDateChanged,
-                                "Scheduled date",
-                                modifier = Modifier.weight(1f),
-                                supportingText = uiState.scheduleError,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                            )
-                            ServiceSphereTextField(
-                                uiState.scheduledTimeText,
-                                viewModel::onScheduledTimeChanged,
-                                "Scheduled time",
-                                modifier = Modifier.weight(1f),
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { hideKeyboardAndClearFocus() })
-                            )
-                        }
-                        ServiceSphereOutlinedButton(
-                            label = "Reminder: ${ReminderTypes.label(uiState.reminderType)}",
-                            modifier = Modifier.fillMaxWidth(),
+                        SchedulePickerSection(
+                            uiState = uiState,
+                            onDateClick = {
+                                hideKeyboardAndClearFocus()
+                                showDatePicker = true
+                            },
+                            onTimeClick = {
+                                hideKeyboardAndClearFocus()
+                                showTimePicker = true
+                            },
+                            onClearSchedule = viewModel::clearSchedule
+                        )
+                        OutlinedButton(
+                            enabled = uiState.scheduledAt != null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
                             onClick = {
                                 hideKeyboardAndClearFocus()
-                                if (uiState.scheduledDateText.isBlank()) Unit else showReminderDialog = true
+                                showReminderDialog = true
                             }
-                        )
-                        if (uiState.scheduledDateText.isBlank()) {
-                            Text("Add a schedule to enable reminders", color = ServiceSphereTextSecondary)
+                        ) {
+                            Text("Reminder: ${ReminderTypes.label(uiState.reminderType)}")
+                        }
+                        if (uiState.scheduledAt == null) {
+                            Text("Add a schedule to enable reminders.", color = ServiceSphereTextSecondary)
                         }
                         uiState.reminderError?.let { Text(it, color = ServiceSphereDanger) }
                         ServiceSphereOutlinedButton(
@@ -240,6 +254,57 @@ fun JobFormScreen(
         }
     }
 
+    if (showDatePicker) {
+        val datePickerState = androidx.compose.material3.rememberDatePickerState(
+            initialSelectedDateMillis = uiState.selectedDateMillis ?: todayPickerMillis()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let(viewModel::onScheduledDatePicked)
+                        showDatePicker = false
+                    }
+                ) { Text("Confirm") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        val fallbackTime = remember { roundedCurrentTime() }
+        val timePickerState = androidx.compose.material3.rememberTimePickerState(
+            initialHour = uiState.selectedHour ?: fallbackTime.hour,
+            initialMinute = uiState.selectedMinute ?: fallbackTime.minute,
+            is24Hour = true
+        )
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { Text("Scheduled time") },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    TimePicker(state = timePickerState)
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onScheduledTimePicked(timePickerState.hour, timePickerState.minute)
+                        showTimePicker = false
+                    }
+                ) { Text("Confirm") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+            }
+        )
+    }
+
     if (showClientDialog) {
         ClientSelectorDialog(
             clients = uiState.availableClients,
@@ -270,6 +335,73 @@ fun JobFormScreen(
             }
         )
     }
+}
+
+@Composable
+private fun SchedulePickerSection(
+    uiState: JobFormUiState,
+    onDateClick: () -> Unit,
+    onTimeClick: () -> Unit,
+    onClearSchedule: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            SchedulePickerField(
+                label = "Scheduled date",
+                value = uiState.scheduledDateDisplay.ifBlank { "Select date" },
+                icon = Icons.Filled.CalendarMonth,
+                modifier = Modifier.weight(1f),
+                onClick = onDateClick
+            )
+            SchedulePickerField(
+                label = "Scheduled time",
+                value = uiState.scheduledTimeDisplay.ifBlank { "Select time" },
+                icon = Icons.Filled.AccessTime,
+                modifier = Modifier.weight(1f),
+                onClick = onTimeClick
+            )
+        }
+        uiState.scheduleError?.let { Text(it, color = ServiceSphereDanger) }
+        if (uiState.scheduledAt != null) {
+            TextButton(onClick = onClearSchedule) {
+                Text("Clear schedule")
+            }
+        }
+    }
+}
+
+@Composable
+private fun SchedulePickerField(
+    label: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.height(64.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(icon, contentDescription = null)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(label, style = MaterialTheme.typography.labelMedium, color = ServiceSphereTextSecondary)
+                Text(value, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+private fun todayPickerMillis(): Long =
+    LocalDate.now().atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+
+private fun roundedCurrentTime(): LocalTime {
+    val now = LocalTime.now()
+    val roundedMinutes = (((now.hour * 60) + now.minute + 7) / 15) * 15
+    return LocalTime.of((roundedMinutes / 60) % 24, roundedMinutes % 60)
 }
 
 @Composable

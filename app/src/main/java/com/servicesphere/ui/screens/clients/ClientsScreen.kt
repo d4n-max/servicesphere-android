@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.servicesphere.billing.FreePlanLimits
 import com.servicesphere.data.ServiceLocator
 import com.servicesphere.ui.components.EmptyState
 import com.servicesphere.ui.components.ScreenHeader
@@ -71,7 +72,10 @@ fun ClientsScreen(
             }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("${uiState.clients.size} clients", style = MaterialTheme.typography.labelLarge, color = ServiceSphereTextSecondary)
+                    Column {
+                        Text("${uiState.clients.size} clients", style = MaterialTheme.typography.labelLarge, color = ServiceSphereTextSecondary)
+                        Text("${uiState.totalClients} of ${FreePlanLimits.maxClients} free clients used", style = MaterialTheme.typography.bodySmall, color = ServiceSphereTextSecondary)
+                    }
                     StatusChip(if (uiState.searchQuery.isBlank()) "All clients" else "Search", StatusTone.Primary)
                 }
             }
@@ -87,9 +91,9 @@ fun ClientsScreen(
                 uiState.clients.isEmpty() && uiState.searchQuery.isBlank() -> item {
                     EmptyState(
                         title = "No clients yet",
-                        message = "Add your first customer so you can create jobs, quotes, and invoices faster.",
+                        message = "Add a client once, then attach jobs, quotes, notes, and invoices to them.",
                         icon = Icons.Filled.Groups,
-                        actionLabel = "Add Client",
+                        actionLabel = "Add client",
                         onAction = onAddClient
                     )
                 }

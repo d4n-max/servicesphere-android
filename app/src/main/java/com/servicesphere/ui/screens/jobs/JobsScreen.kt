@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.servicesphere.billing.FreePlanLimits
 import com.servicesphere.data.ServiceLocator
 import com.servicesphere.ui.components.EmptyState
 import com.servicesphere.ui.components.JobCard
@@ -110,7 +111,10 @@ fun JobsScreen(
             }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("${uiState.jobs.size} jobs", style = MaterialTheme.typography.labelLarge, color = ServiceSphereTextSecondary)
+                    Column {
+                        Text("${uiState.jobs.size} jobs", style = MaterialTheme.typography.labelLarge, color = ServiceSphereTextSecondary)
+                        Text("${uiState.totalActiveJobs} of ${FreePlanLimits.maxJobs} free jobs used", style = MaterialTheme.typography.bodySmall, color = ServiceSphereTextSecondary)
+                    }
                     StatusChip(uiState.selectedFilter.label, StatusTone.Info)
                 }
             }
@@ -122,9 +126,9 @@ fun JobsScreen(
                 uiState.jobs.isEmpty() && uiState.searchQuery.isBlank() && uiState.selectedFilter == JobFilter.ALL -> item {
                     EmptyState(
                         title = "No jobs yet",
-                        message = "Jobs help you track scheduled work, status, notes, photos, and signatures.",
+                        message = "Start with the next job on your schedule. You only need a title and client to begin.",
                         icon = Icons.Filled.HomeRepairService,
-                        actionLabel = "Create Job",
+                        actionLabel = "Create job",
                         onAction = onAddJob
                     )
                 }
@@ -216,9 +220,9 @@ private fun CalendarAgenda(
             }
             EmptyState(
                 title = message,
-                message = "Scheduled jobs will appear in this agenda view.",
+                message = "Start with the next job on your schedule. You only need a title and client to begin.",
                 icon = Icons.Filled.CalendarMonth,
-                actionLabel = "Create Job",
+                actionLabel = "Create job",
                 onAction = onAddJob
             )
         } else {

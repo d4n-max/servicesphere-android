@@ -17,7 +17,8 @@ data class PdfActionUiState(
     val isGeneratingPdf: Boolean = false,
     val generatedPdfPath: String? = null,
     val pdfErrorMessage: String? = null,
-    val pdfSuccessMessage: String? = null
+    val pdfSuccessMessage: String? = null,
+    val quoteShareSuccessEventId: Long? = null
 )
 
 class QuotePdfActionViewModel(
@@ -54,7 +55,7 @@ class QuotePdfActionViewModel(
             }
             val shareError = shareManager.sharePdf(result.filePath, "Share Quote PDF")
             _uiState.update {
-                if (shareError == null) it.copy(isGeneratingPdf = false, generatedPdfPath = result.filePath)
+                if (shareError == null) it.copy(isGeneratingPdf = false, generatedPdfPath = result.filePath, quoteShareSuccessEventId = System.currentTimeMillis())
                 else it.copy(isGeneratingPdf = false, generatedPdfPath = result.filePath, pdfErrorMessage = shareError)
             }
         }

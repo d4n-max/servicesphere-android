@@ -3,6 +3,8 @@ package com.servicesphere.data
 import android.content.Context
 import androidx.room.Room
 import com.servicesphere.BuildConfig
+import com.servicesphere.activation.ActivationTracker
+import com.servicesphere.activation.DebugActivationTracker
 import com.servicesphere.billing.MockBillingService
 import com.servicesphere.billing.FeatureGateManager
 import com.servicesphere.billing.RevenueCatManager
@@ -26,6 +28,7 @@ import com.servicesphere.data.repository.ServiceSphereRepository
 import com.servicesphere.data.repository.SignatureRepository
 import com.servicesphere.pdf.PdfService
 import com.servicesphere.pdf.ServiceSpherePdfService
+import com.servicesphere.review.ReviewPromptManager
 import com.servicesphere.share.AndroidShareService
 import com.servicesphere.share.ShareService
 import com.servicesphere.reminders.JobReminderScheduler
@@ -70,6 +73,10 @@ object ServiceLocator {
     lateinit var share: ShareService
         private set
     lateinit var dataExportManager: DataExportManager
+        private set
+    lateinit var reviewPromptManager: ReviewPromptManager
+        private set
+    lateinit var activationTracker: ActivationTracker
         private set
     private lateinit var seeder: DemoDataSeeder
 
@@ -116,6 +123,8 @@ object ServiceLocator {
         )
         pdf = ServiceSpherePdfService()
         share = AndroidShareService()
+        activationTracker = DebugActivationTracker()
+        reviewPromptManager = ReviewPromptManager(preferences)
         dataExportManager = DataExportManager(
             context = context.applicationContext,
             database = database,

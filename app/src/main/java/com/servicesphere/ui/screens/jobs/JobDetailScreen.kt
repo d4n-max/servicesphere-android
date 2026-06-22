@@ -64,9 +64,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.servicesphere.billing.FeatureGateResult
+import com.servicesphere.activation.ActivationEvents
 import com.servicesphere.data.ServiceLocator
 import com.servicesphere.data.local.JobPhotoStorage
 import com.servicesphere.data.local.SignatureImageStorage
+import com.servicesphere.domain.model.JobStatus
 import com.servicesphere.messaging.MessageTemplateType
 import com.servicesphere.ui.components.EmptyState
 import com.servicesphere.ui.components.QuickActionButton
@@ -102,6 +104,10 @@ fun JobDetailScreen(
     onComposeMessage: (MessageTemplateType) -> Unit,
     onCaptureSignature: () -> Unit,
     onPhotoGateBlocked: (FeatureGateResult) -> Unit,
+    onJobCompleted: () -> Unit,
+    isSampleJob: Boolean = false,
+    onCreateRealFirstJob: () -> Unit = {},
+    onBusinessSetup: () -> Unit = {},
     viewModel: JobDetailViewModel = viewModel(
         factory = JobDetailViewModel.Factory(
             jobId,
@@ -128,6 +134,10 @@ fun JobDetailScreen(
         )
     )
     val signaturesUiState by signaturesViewModel.uiState.collectAsState()
+    val businessSetupComplete by ServiceLocator.preferences.hasCompletedBusinessSetup.collectAsState(initial = false)
+    val currentJob = uiState.job
+    val hasMeaningfulActivationDetail = currentJob?.hasMeaningfulActivationDetail == true || photosUiState.photos.isNotEmpty()
+    val showBusinessSetupPrompt = currentJob != null && !isSampleJob && !businessSetupComplete
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showStatusDialog by remember { mutableStateOf(false) }
     var showAddPhotoDialog by remember { mutableStateOf(false) }
@@ -169,6 +179,11 @@ fun JobDetailScreen(
     LaunchedEffect(uiState.deleteSuccess) {
         if (uiState.deleteSuccess) onDeleted()
     }
+    LaunchedEffect(Unit) {
+        viewModel.statusUpdateEvents.collect { status ->
+            if (status == JobStatus.COMPLETED) onJobCompleted()
+        }
+    }
     LaunchedEffect(photosUiState.errorMessage) {
         photosUiState.errorMessage?.let {
             snackbar.showSnackbar(it)
@@ -193,6 +208,16 @@ fun JobDetailScreen(
             signaturesViewModel.clearSuccess()
         }
     }
+    LaunchedEffect(showBusinessSetupPrompt) {
+        if (showBusinessSetupPrompt) {
+            ServiceLocator.activationTracker.track(ActivationEvents.BUSINESS_SETUP_PROMPT_SEEN)
+        }
+    }
+    LaunchedEffect(currentJob?.id, hasMeaningfulActivationDetail) {
+        if (currentJob != null && hasMeaningfulActivationDetail) {
+            ServiceLocator.activationTracker.track(ActivationEvents.ACTIVATION_FIRST_JOB_ORGANIZED)
+        }
+    }
 
     Column(Modifier.fillMaxSize()) {
         SnackbarHost(snackbar)
@@ -208,11 +233,27 @@ fun JobDetailScreen(
                 }
                 else -> {
                     val job = uiState.job!!
+                    if (isSampleJob) {
+                        item {
+                            SampleJobBanner(onCreateRealFirstJob)
+                        }
+                    }
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             ScreenHeader(job.title, job.clientName ?: "No client linked")
                             StatusChip(job.displayStatus, toneForJob(job.status))
                         }
+                    }
+                    item {
+                        FirstUseJobPrompt(
+                            hasMeaningfulDetail = hasMeaningfulActivationDetail,
+                            showBusinessSetupPrompt = showBusinessSetupPrompt,
+                            onAddQuote = onCreateQuote,
+                            onAddNote = { onEdit(job.id) },
+                            onAddPhoto = ::requestAddPhoto,
+                            onCreateInvoice = onCreateInvoice,
+                            onBusinessSetup = onBusinessSetup
+                        )
                     }
                     uiState.errorMessage?.let { message ->
                         item { ServiceSphereCard { Text(message, color = ServiceSphereDanger) } }
@@ -372,6 +413,57 @@ fun JobDetailScreen(
 }
 
 @Composable
+private fun SampleJobBanner(onCreateRealFirstJob: () -> Unit) {
+    ServiceSphereCard(accentColor = ServiceSpherePrimary) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Sample job. Create your own when you're ready.", fontWeight = FontWeight.Bold)
+            Text("Explore how a job workspace keeps notes, quotes, photos, signatures, and invoices together.", color = ServiceSphereTextSecondary)
+            ServiceSphereButton("Create my real first job", onClick = onCreateRealFirstJob)
+        }
+    }
+}
+
+@Composable
+private fun FirstUseJobPrompt(
+    hasMeaningfulDetail: Boolean,
+    showBusinessSetupPrompt: Boolean,
+    onAddQuote: () -> Unit,
+    onAddNote: () -> Unit,
+    onAddPhoto: () -> Unit,
+    onCreateInvoice: () -> Unit,
+    onBusinessSetup: () -> Unit
+) {
+    ServiceSphereCard {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (hasMeaningfulDetail) {
+                Text("Nice. This job now has the details you need in the field.", fontWeight = FontWeight.Bold)
+            } else {
+                Text("Add one detail so this job is ready to work from.", fontWeight = FontWeight.Bold)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ServiceSphereOutlinedButton("Add quote", Modifier.weight(1f), onClick = onAddQuote)
+                    ServiceSphereOutlinedButton("Add note", Modifier.weight(1f), onClick = onAddNote)
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ServiceSphereOutlinedButton("Add photo", Modifier.weight(1f), onClick = onAddPhoto)
+                    ServiceSphereOutlinedButton("Create invoice", Modifier.weight(1f), onClick = onCreateInvoice)
+                }
+            }
+            if (showBusinessSetupPrompt) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Finish business setup", fontWeight = FontWeight.Bold)
+                    Text("Add your details once so quotes and invoices are ready later.", color = ServiceSphereTextSecondary)
+                    ServiceSphereButton("Add business details", onClick = onBusinessSetup)
+                    Text("Create first job • Add job details • Add business info • Create quote • Create invoice", color = ServiceSphereTextSecondary)
+                }
+            }
+        }
+    }
+}
+
+private val JobUiModel.hasMeaningfulActivationDetail: Boolean
+    get() = !internalNotes.isNullOrBlank() || !address.isNullOrBlank() || estimatedPrice != null
+
+@Composable
 private fun JobMessageActions(onComposeMessage: (MessageTemplateType) -> Unit) {
     ServiceSphereCard {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -503,10 +595,10 @@ private fun PhotoProofSection(
         when {
             uiState.isLoading -> ServiceSphereCard { Text("Loading photos", color = ServiceSphereTextSecondary) }
             uiState.photos.isEmpty() -> EmptyState(
-                title = "No photo proof yet",
-                message = "Add before, after, or completion photos for this job.",
+                title = "No job photos yet",
+                message = "Add before-and-after photos or site details when you're on the job.",
                 icon = Icons.Filled.AddPhotoAlternate,
-                actionLabel = "Add Photo",
+                actionLabel = "Add photo",
                 onAction = onAddPhoto
             )
             else -> uiState.photos.forEach { photo ->
