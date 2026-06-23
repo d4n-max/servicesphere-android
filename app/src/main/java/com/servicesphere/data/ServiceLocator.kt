@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.servicesphere.BuildConfig
 import com.servicesphere.activation.ActivationTracker
 import com.servicesphere.activation.DebugActivationTracker
+import com.servicesphere.analytics.AnalyticsTracker
 import com.servicesphere.billing.MockBillingService
 import com.servicesphere.billing.FeatureGateManager
 import com.servicesphere.billing.RevenueCatManager
@@ -78,6 +79,8 @@ object ServiceLocator {
         private set
     lateinit var activationTracker: ActivationTracker
         private set
+    lateinit var analyticsTracker: AnalyticsTracker
+        private set
     private lateinit var seeder: DemoDataSeeder
 
     fun init(context: Context) {
@@ -124,6 +127,7 @@ object ServiceLocator {
         pdf = ServiceSpherePdfService()
         share = AndroidShareService()
         activationTracker = DebugActivationTracker()
+        analyticsTracker = AnalyticsTracker.create(context.applicationContext)
         reviewPromptManager = ReviewPromptManager(preferences)
         dataExportManager = DataExportManager(
             context = context.applicationContext,

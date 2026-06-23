@@ -104,6 +104,15 @@ fun ServiceSphereApp(initialJobId: String? = null) {
             currentRoute != Route.Walkthrough.path
         val showBottomBar = currentRoute in bottomDestinations.map { it.route.path }
 
+        LaunchedEffect(backStackEntry) {
+            val screen = currentRoute.toAnalyticsScreenName() ?: return@LaunchedEffect
+            val source = backStackEntry?.arguments?.getString("source") ?: "navigation"
+            ServiceLocator.analyticsTracker.screenView(screen = screen, source = source)
+            if (currentRoute == Route.Settings.path) {
+                ServiceLocator.analyticsTracker.settingsOpened(source = source)
+            }
+        }
+
         fun runGated(check: suspend () -> FeatureGateResult, action: () -> Unit) {
             scope.launch {
                 val result = check()
@@ -848,6 +857,41 @@ private fun topBarTitle(route: String?): String = when (route) {
     Route.EditInvoice.path -> "Edit Invoice"
     Route.CaptureSignature.path -> "Capture Signature"
     else -> "ServiceSphere"
+}
+
+private fun String?.toAnalyticsScreenName(): String? = when (this) {
+    Route.Onboarding.path -> "onboarding"
+    Route.CreateFirstJob.path -> "create_first_job"
+    Route.BusinessSetup.path -> "business_setup"
+    Route.Walkthrough.path -> "walkthrough"
+    Route.Dashboard.path -> "dashboard"
+    Route.Jobs.path -> "jobs"
+    Route.Calendar.path -> "calendar"
+    Route.Clients.path -> "clients"
+    Route.Quotes.path -> "quotes"
+    Route.Invoices.path -> "invoices"
+    Route.Settings.path -> "settings"
+    Route.BusinessProfile.path -> "business_profile"
+    Route.CurrencyTaxSettings.path -> "currency_tax_settings"
+    Route.DocumentSettings.path -> "document_settings"
+    Route.ReminderSettings.path -> "reminder_settings"
+    Route.DataPrivacy.path -> "data_privacy"
+    Route.ComposeMessage.path -> "compose_message"
+    Route.Paywall.path -> "paywall"
+    Route.CreateJob.path -> "create_job"
+    Route.JobDetail.path -> "job_detail"
+    Route.EditJob.path -> "edit_job"
+    Route.CreateClient.path -> "create_client"
+    Route.ClientDetail.path -> "client_detail"
+    Route.EditClient.path -> "edit_client"
+    Route.CreateQuote.path -> "create_quote"
+    Route.QuoteDetail.path -> "quote_detail"
+    Route.EditQuote.path -> "edit_quote"
+    Route.CreateInvoice.path -> "create_invoice"
+    Route.InvoiceDetail.path -> "invoice_detail"
+    Route.EditInvoice.path -> "edit_invoice"
+    Route.CaptureSignature.path -> "capture_signature"
+    else -> null
 }
 
 private suspend fun resolveStartDestination(): String {

@@ -33,10 +33,12 @@ fun OnboardingScreen(
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         ServiceLocator.activationTracker.track(ActivationEvents.ONBOARDING_STARTED)
+        ServiceLocator.analyticsTracker.onboardingStarted(source = "first_launch")
     }
-    fun markOnboardingCompleteThen(action: () -> Unit) {
+    fun markOnboardingCompleteThen(source: String, action: () -> Unit) {
         scope.launch {
             ServiceLocator.preferences.setOnboardingComplete(true)
+            ServiceLocator.analyticsTracker.onboardingCompleted(source = source, result = "completed")
             action()
         }
     }
@@ -71,11 +73,11 @@ fun OnboardingScreen(
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
             ServiceSphereButton("Create my first job") {
                 ServiceLocator.activationTracker.track(ActivationEvents.FIRST_JOB_STARTED)
-                markOnboardingCompleteThen(onCreateFirstJob)
+                markOnboardingCompleteThen(source = "create_first_job", action = onCreateFirstJob)
             }
             ServiceSphereOutlinedButton("Explore with a sample job", Modifier.fillMaxWidth()) {
                 ServiceLocator.activationTracker.track(ActivationEvents.ONBOARDING_DEMO_STARTED)
-                markOnboardingCompleteThen(onExploreSampleJob)
+                markOnboardingCompleteThen(source = "sample_job", action = onExploreSampleJob)
             }
             Text(
                 "Takes about 1 minute. You can change everything later.",

@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "700916533721",
+    "project_id": "dcp-labs-analytics",
+    "storage_bucket": "dcp-labs-analytics.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700916533721:android:1c58faf2ee033ceed571c8",
+        "android_client_info": {
+          "package_name": "com.caretail.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC6ME4wse90TR7_I385dN-nAQ7zcqcfVk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700916533721:android:4b3b5bda8372559cd571c8",
+        "android_client_info": {
+          "package_name": "com.learnliftai.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC6ME4wse90TR7_I385dN-nAQ7zcqcfVk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700916533721:android:736e06a76e402d7ad571c8",
+        "android_client_info": {
+          "package_name": "com.servicesphere.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC6ME4wse90TR7_I385dN-nAQ7zcqcfVk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

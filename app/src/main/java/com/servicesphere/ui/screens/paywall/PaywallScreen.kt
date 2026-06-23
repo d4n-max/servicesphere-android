@@ -54,6 +54,7 @@ fun PaywallScreen(
         factory = PaywallViewModel.Factory(
             ServiceLocator.subscriptionRepository,
             ServiceLocator.featureGateManager,
+            ServiceLocator.analyticsTracker,
             PaywallTrigger.fromRouteValue(source)
         )
     )

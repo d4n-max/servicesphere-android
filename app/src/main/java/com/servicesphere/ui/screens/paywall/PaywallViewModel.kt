@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.servicesphere.BuildConfig
+import com.servicesphere.analytics.AnalyticsTracker
 import com.servicesphere.billing.BillingResult
 import com.servicesphere.billing.FeatureGateManager
 import com.servicesphere.billing.LimitUsageSnapshot
@@ -38,6 +39,7 @@ data class PaywallUiState(
 class PaywallViewModel(
     private val subscriptionRepository: SubscriptionRepository,
     private val featureGateManager: FeatureGateManager,
+    private val analyticsTracker: AnalyticsTracker,
     private val trigger: PaywallTrigger
 ) : ViewModel() {
     private val usage = MutableStateFlow(LimitUsageSnapshot())
@@ -87,6 +89,10 @@ class PaywallViewModel(
 
     init {
         log("paywall_viewed(${trigger.routeValue})")
+        analyticsTracker.paywallViewed(
+            screen = AnalyticsTracker.Screens.PAYWALL,
+            source = trigger.routeValue
+        )
         loadPaywall()
         refreshUsage()
     }
@@ -107,30 +113,84 @@ class PaywallViewModel(
     }
 
     fun purchaseSelectedPackage(activity: Activity?) {
+        val selectedPlanId = uiState.value.selectedPackageId
+        analyticsTracker.premiumCtaClicked(
+            screen = AnalyticsTracker.Screens.PAYWALL,
+            source = trigger.routeValue,
+            plan = selectedPlanId
+        )
         if (activity == null) {
+            analyticsTracker.purchaseFailed(
+                screen = AnalyticsTracker.Screens.PAYWALL,
+                source = trigger.routeValue,
+                plan = selectedPlanId,
+                result = "not_started",
+                errorType = "missing_activity"
+            )
             errorMessage.value = "Purchase requires an active Android screen."
             return
         }
         val selected = uiState.value.packages.firstOrNull { it.id == uiState.value.selectedPackageId }
         if (selected?.revenueCatPackage == null) {
+            analyticsTracker.purchaseFailed(
+                screen = AnalyticsTracker.Screens.PAYWALL,
+                source = trigger.routeValue,
+                plan = selectedPlanId,
+                result = "not_started",
+                errorType = "no_package_selected"
+            )
             errorMessage.value = "Select a subscription package first."
             return
         }
         log("purchase_started(${selected.id})")
+        analyticsTracker.purchaseStarted(
+            screen = AnalyticsTracker.Screens.PAYWALL,
+            source = trigger.routeValue,
+            plan = selected.id
+        )
         viewModelScope.launch {
             isPurchasing.value = true
             when (val result = subscriptionRepository.purchase(activity, selected.revenueCatPackage)) {
                 is BillingResult.Success -> {
                     if (result.value.isPro) {
                         log("purchase_success(${selected.id})")
+                        analyticsTracker.purchaseSuccess(
+                            screen = AnalyticsTracker.Screens.PAYWALL,
+                            source = trigger.routeValue,
+                            plan = selected.id
+                        )
                         successMessage.value = "ServiceSphere Pro is active."
                     } else {
+                        analyticsTracker.purchaseFailed(
+                            screen = AnalyticsTracker.Screens.PAYWALL,
+                            source = trigger.routeValue,
+                            plan = selected.id,
+                            result = "completed_not_active",
+                            errorType = "entitlement_inactive"
+                        )
                         errorMessage.value = "Purchase completed, but Pro is not active yet."
                     }
                     refreshUsage()
                 }
-                is BillingResult.Error -> errorMessage.value = result.message
-                BillingResult.Cancelled -> Unit
+                is BillingResult.Error -> {
+                    analyticsTracker.purchaseFailed(
+                        screen = AnalyticsTracker.Screens.PAYWALL,
+                        source = trigger.routeValue,
+                        plan = selected.id,
+                        result = "failed",
+                        errorType = "billing_error"
+                    )
+                    errorMessage.value = result.message
+                }
+                BillingResult.Cancelled -> {
+                    analyticsTracker.purchaseFailed(
+                        screen = AnalyticsTracker.Screens.PAYWALL,
+                        source = trigger.routeValue,
+                        plan = selected.id,
+                        result = "cancelled",
+                        errorType = "user_cancelled"
+                    )
+                }
             }
             isPurchasing.value = false
         }
@@ -179,10 +239,11 @@ class PaywallViewModel(
     class Factory(
         private val subscriptionRepository: SubscriptionRepository,
         private val featureGateManager: FeatureGateManager,
+        private val analyticsTracker: AnalyticsTracker,
         private val trigger: PaywallTrigger
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            PaywallViewModel(subscriptionRepository, featureGateManager, trigger) as T
+            PaywallViewModel(subscriptionRepository, featureGateManager, analyticsTracker, trigger) as T
     }
 }
