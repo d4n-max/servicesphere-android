@@ -16,7 +16,7 @@ android {
         applicationId = "com.servicesphere.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
+        versionCode = 5
         versionName = "1.0.0"
         val localProperties = Properties().apply {
             val file = rootProject.file("local.properties")
