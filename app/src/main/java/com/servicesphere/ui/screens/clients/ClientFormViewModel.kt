@@ -3,6 +3,9 @@ package com.servicesphere.ui.screens.clients
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.servicesphere.activation.ActivationEvents
+import com.servicesphere.activation.ActivationParams
+import com.servicesphere.activation.ActivationTracker
 import com.servicesphere.data.local.ClientEntity
 import com.servicesphere.data.repository.ClientRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +33,8 @@ data class ClientFormUiState(
 )
 
 class ClientFormViewModel(
-    private val clientRepository: ClientRepository
+    private val clientRepository: ClientRepository,
+    private val activationTracker: ActivationTracker
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ClientFormUiState())
     val uiState: StateFlow<ClientFormUiState> = _uiState.asStateFlow()
@@ -115,7 +119,15 @@ class ClientFormViewModel(
                     },
                     updatedAt = now
                 )
-                if (current.isEditing) clientRepository.updateClient(entity) else clientRepository.insertClient(entity)
+                if (current.isEditing) {
+                    clientRepository.updateClient(entity)
+                } else {
+                    clientRepository.insertClient(entity)
+                    activationTracker.trackFirst(
+                        ActivationEvents.FIRST_CLIENT_CREATED,
+                        mapOf(ActivationParams.SOURCE_SCREEN to "client_form")
+                    )
+                }
                 entity.id
             }.onSuccess { savedId ->
                 _uiState.update { it.copy(id = savedId, isSaving = false, saveSuccess = true) }
@@ -137,10 +149,13 @@ class ClientFormViewModel(
         return android.util.Patterns.EMAIL_ADDRESS.matcher(value).matches()
     }
 
-    class Factory(private val clientRepository: ClientRepository) : ViewModelProvider.Factory {
+    class Factory(
+        private val clientRepository: ClientRepository,
+        private val activationTracker: ActivationTracker
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ClientFormViewModel(clientRepository) as T
+            return ClientFormViewModel(clientRepository, activationTracker) as T
         }
     }
 }

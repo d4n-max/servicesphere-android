@@ -65,6 +65,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.servicesphere.billing.FeatureGateResult
 import com.servicesphere.activation.ActivationEvents
+import com.servicesphere.activation.ActivationParams
 import com.servicesphere.data.ServiceLocator
 import com.servicesphere.data.local.JobPhotoStorage
 import com.servicesphere.data.local.SignatureImageStorage
@@ -122,7 +123,12 @@ fun JobDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
     val photosViewModel: JobPhotosViewModel = viewModel(
         key = "job_photos_$jobId",
-        factory = JobPhotosViewModel.Factory(jobId, ServiceLocator.jobPhotoRepository, JobPhotoStorage(context.applicationContext))
+        factory = JobPhotosViewModel.Factory(
+            jobId,
+            ServiceLocator.jobPhotoRepository,
+            JobPhotoStorage(context.applicationContext),
+            ServiceLocator.activationTracker
+        )
     )
     val photosUiState by photosViewModel.uiState.collectAsState()
     val signaturesViewModel: SignaturesViewModel = viewModel(
@@ -215,7 +221,16 @@ fun JobDetailScreen(
     }
     LaunchedEffect(currentJob?.id, hasMeaningfulActivationDetail) {
         if (currentJob != null && hasMeaningfulActivationDetail) {
-            ServiceLocator.activationTracker.track(ActivationEvents.ACTIVATION_FIRST_JOB_ORGANIZED)
+            ServiceLocator.activationTracker.trackFirst(
+                ActivationEvents.ACTIVATION_FIRST_JOB_ORGANIZED,
+                mapOf(
+                    ActivationParams.SOURCE_SCREEN to "job_detail",
+                    ActivationParams.HAS_CLIENT to (!currentJob.clientName.isNullOrBlank()).toString(),
+                    ActivationParams.HAS_SCHEDULE to (!currentJob.displaySchedule.isNullOrBlank()).toString(),
+                    ActivationParams.HAS_DETAILS to hasMeaningfulActivationDetail.toString(),
+                    ActivationParams.JOB_STATUS to currentJob.status
+                )
+            )
         }
     }
 

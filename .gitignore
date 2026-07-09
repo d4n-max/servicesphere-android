@@ -40,7 +40,7 @@ app/debug/
 exports/
 pdfs/
 job_photos/
-signatures/
+/signatures/
 
 # Root-level local QA artifacts
 /*.png

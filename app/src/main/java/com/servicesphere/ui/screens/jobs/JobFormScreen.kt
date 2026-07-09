@@ -77,7 +77,8 @@ fun JobFormScreen(
             ServiceLocator.clientRepository,
             ServiceLocator.jobReminderRepository,
             ServiceLocator.reminderScheduler,
-            ServiceLocator.preferences
+            ServiceLocator.preferences,
+            ServiceLocator.activationTracker
         )
     )
 ) {

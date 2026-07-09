@@ -16,8 +16,8 @@ android {
         applicationId = "com.servicesphere.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.0.0"
+        versionCode = 6
+        versionName = "1.0.1"
         val localProperties = Properties().apply {
             val file = rootProject.file("local.properties")
             if (file.exists()) file.inputStream().use(::load)

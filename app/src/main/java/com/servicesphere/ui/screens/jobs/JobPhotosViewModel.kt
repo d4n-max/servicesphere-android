@@ -4,6 +4,9 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.servicesphere.activation.ActivationEvents
+import com.servicesphere.activation.ActivationParams
+import com.servicesphere.activation.ActivationTracker
 import com.servicesphere.data.local.JobPhotoEntity
 import com.servicesphere.data.local.JobPhotoStorage
 import com.servicesphere.data.repository.JobPhotoRepository
@@ -40,7 +43,8 @@ data class JobPhotosUiState(
 class JobPhotosViewModel(
     private val jobId: String,
     private val repository: JobPhotoRepository,
-    private val storage: JobPhotoStorage
+    private val storage: JobPhotoStorage,
+    private val activationTracker: ActivationTracker
 ) : ViewModel() {
     private val selectedPhotoId = MutableStateFlow<String?>(null)
     private val isAddingPhoto = MutableStateFlow(false)
@@ -89,12 +93,12 @@ class JobPhotosViewModel(
 
     fun addPhotoFromUri(jobId: String, sourceUri: Uri?) {
         if (sourceUri == null) return
-        addPhoto(jobId, sourceUri, "Photo added")
+        addPhoto(jobId, sourceUri, "Photo added", "library")
     }
 
     fun addCapturedPhoto(jobId: String, capturedUri: Uri?) {
         if (capturedUri == null) return
-        addPhoto(jobId, capturedUri, "Photo added")
+        addPhoto(jobId, capturedUri, "Photo added", "camera")
     }
 
     fun createCameraImageUri(): Uri = storage.createCameraImageUri(jobId)
@@ -154,7 +158,7 @@ class JobPhotosViewModel(
         captionDraft.value = ""
     }
 
-    private fun addPhoto(targetJobId: String, sourceUri: Uri, success: String) {
+    private fun addPhoto(targetJobId: String, sourceUri: Uri, success: String, source: String) {
         viewModelScope.launch {
             isAddingPhoto.value = true
             runCatching {
@@ -169,6 +173,13 @@ class JobPhotosViewModel(
                     )
                 )
             }.onSuccess {
+                activationTracker.trackFirst(
+                    ActivationEvents.FIRST_PHOTO_PROOF_ADDED,
+                    mapOf(
+                        ActivationParams.SOURCE_SCREEN to "job_photos",
+                        ActivationParams.PHOTO_SOURCE to source
+                    )
+                )
                 successMessage.value = success
             }.onFailure { error ->
                 errorMessage.value = error.message ?: "Couldn't add photo"
@@ -180,11 +191,12 @@ class JobPhotosViewModel(
     class Factory(
         private val jobId: String,
         private val repository: JobPhotoRepository,
-        private val storage: JobPhotoStorage
+        private val storage: JobPhotoStorage,
+        private val activationTracker: ActivationTracker
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            JobPhotosViewModel(jobId, repository, storage) as T
+            JobPhotosViewModel(jobId, repository, storage, activationTracker) as T
     }
 }
 

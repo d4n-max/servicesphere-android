@@ -84,7 +84,8 @@ fun InvoiceDetailScreen(
                 ServiceLocator.signatureRepository
             ),
             PdfShareManager(LocalContext.current.applicationContext),
-            ServiceLocator.featureGateManager
+            ServiceLocator.featureGateManager,
+            ServiceLocator.activationTracker
         )
     )
 ) {

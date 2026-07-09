@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import android.util.Log
 import com.servicesphere.BuildConfig
+import com.servicesphere.activation.ActivationEvents
+import com.servicesphere.activation.ActivationParams
+import com.servicesphere.activation.ActivationTracker
 import com.servicesphere.data.local.ClientEntity
 import com.servicesphere.data.local.JobEntity
 import com.servicesphere.data.repository.ClientRepository
@@ -76,7 +79,8 @@ class JobFormViewModel(
     private val clientRepository: ClientRepository,
     private val reminderRepository: JobReminderRepository,
     private val reminderScheduler: JobReminderScheduler,
-    private val preferences: UserPreferences
+    private val preferences: UserPreferences,
+    private val activationTracker: ActivationTracker
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(JobFormUiState())
     val uiState: StateFlow<JobFormUiState> = _uiState.asStateFlow()
@@ -294,7 +298,12 @@ class JobFormViewModel(
                     updatedAt = now
                 )
                 val previousReminder = if (current.isEditing) reminderRepository.getFirstReminderForJobOnce(entity.id) else null
-                if (current.isEditing) jobRepository.updateJob(entity) else jobRepository.insertJob(entity)
+                if (current.isEditing) {
+                    jobRepository.updateJob(entity)
+                } else {
+                    jobRepository.insertJob(entity)
+                    trackNewJob(entity)
+                }
                 handleReminderSave(entity, previousReminder?.id)
                 logSave("Save Job repository write succeeded. editing=${current.isEditing}, reminder=${current.reminderType}")
                 entity.id
@@ -347,6 +356,23 @@ class JobFormViewModel(
         }
     }
 
+    private fun trackNewJob(job: JobEntity) {
+        val params = mapOf(
+            ActivationParams.SOURCE_SCREEN to "job_form",
+            ActivationParams.HAS_CLIENT to (job.clientId != null).toString(),
+            ActivationParams.HAS_SCHEDULE to (job.scheduledAt != null).toString(),
+            ActivationParams.HAS_DETAILS to job.hasUsefulDetails().toString(),
+            ActivationParams.JOB_STATUS to job.status
+        )
+        activationTracker.trackFirst(ActivationEvents.FIRST_JOB_CREATED, params)
+        if (job.clientId != null || job.scheduledAt != null || job.hasUsefulDetails()) {
+            activationTracker.trackFirst(ActivationEvents.ACTIVATION_FIRST_JOB_ORGANIZED, params)
+        }
+    }
+
+    private fun JobEntity.hasUsefulDetails(): Boolean =
+        !description.isNullOrBlank() || !address.isNullOrBlank() || estimatedPrice != null
+
     private fun JobFormUiState.withSchedule(date: LocalDate, hour: Int, minute: Int): JobFormUiState {
         val safeTime = LocalTime.of(hour.coerceIn(0, 23), minute.coerceIn(0, 59))
         val scheduledMillis = date.atTime(safeTime).atZone(zoneId).toInstant().toEpochMilli()
@@ -377,11 +403,12 @@ class JobFormViewModel(
         private val clientRepository: ClientRepository,
         private val reminderRepository: JobReminderRepository,
         private val reminderScheduler: JobReminderScheduler,
-        private val preferences: UserPreferences
+        private val preferences: UserPreferences,
+        private val activationTracker: ActivationTracker
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            JobFormViewModel(jobRepository, clientRepository, reminderRepository, reminderScheduler, preferences) as T
+            JobFormViewModel(jobRepository, clientRepository, reminderRepository, reminderScheduler, preferences, activationTracker) as T
     }
 }
 

@@ -61,7 +61,8 @@ fun InvoiceFormScreen(
             ServiceLocator.businessRepository,
             ServiceLocator.clientRepository,
             ServiceLocator.jobRepository,
-            ServiceLocator.quoteRepository
+            ServiceLocator.quoteRepository,
+            ServiceLocator.activationTracker
         )
     )
 ) {

@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.servicesphere.BuildConfig
 import com.servicesphere.activation.ActivationTracker
-import com.servicesphere.activation.DebugActivationTracker
+import com.servicesphere.activation.FirebaseActivationTracker
 import com.servicesphere.analytics.AnalyticsTracker
 import com.servicesphere.billing.MockBillingService
 import com.servicesphere.billing.FeatureGateManager
@@ -126,8 +126,8 @@ object ServiceLocator {
         )
         pdf = ServiceSpherePdfService()
         share = AndroidShareService()
-        activationTracker = DebugActivationTracker()
         analyticsTracker = AnalyticsTracker.create(context.applicationContext)
+        activationTracker = FirebaseActivationTracker.create(context.applicationContext, preferences)
         reviewPromptManager = ReviewPromptManager(preferences)
         dataExportManager = DataExportManager(
             context = context.applicationContext,

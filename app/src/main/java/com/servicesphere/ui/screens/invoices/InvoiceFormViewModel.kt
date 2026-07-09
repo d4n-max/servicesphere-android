@@ -3,6 +3,10 @@ package com.servicesphere.ui.screens.invoices
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.servicesphere.activation.ActivationEvents
+import com.servicesphere.activation.ActivationParams
+import com.servicesphere.activation.ActivationTracker
+import com.servicesphere.activation.AnalyticsValueBuckets
 import com.servicesphere.data.local.BusinessProfileEntity
 import com.servicesphere.data.local.ClientEntity
 import com.servicesphere.data.local.InvoiceEntity
@@ -90,7 +94,8 @@ class InvoiceFormViewModel(
     private val businessRepository: BusinessRepository,
     private val clientRepository: ClientRepository,
     private val jobRepository: JobRepository,
-    private val quoteRepository: QuoteRepository
+    private val quoteRepository: QuoteRepository,
+    private val activationTracker: ActivationTracker
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(InvoiceFormUiState())
     val uiState: StateFlow<InvoiceFormUiState> = _uiState.asStateFlow()
@@ -274,6 +279,16 @@ class InvoiceFormViewModel(
                 if (validated.isEditing) invoiceRepository.updateInvoice(invoice) else {
                     invoiceRepository.insertInvoice(invoice)
                     incrementInvoiceNumber()
+                    activationTracker.trackFirst(
+                        ActivationEvents.FIRST_INVOICE_CREATED,
+                        mapOf(
+                            ActivationParams.SOURCE_SCREEN to "invoice_form",
+                            ActivationParams.HAS_CLIENT to (invoice.clientId != null).toString(),
+                            ActivationParams.ITEM_COUNT to validated.lineItems.size.toString(),
+                            ActivationParams.VALUE_BUCKET to AnalyticsValueBuckets.fromAmount(invoice.total),
+                            ActivationParams.CURRENCY to ensureBusinessProfile().currencyCode
+                        )
+                    )
                 }
                 lineItemRepository.deleteLineItemsForParent(id, LineItemParentType.INVOICE)
                 lineItemRepository.insertLineItems(validated.lineItems.mapIndexed { index, item ->
@@ -407,11 +422,12 @@ class InvoiceFormViewModel(
         private val businessRepository: BusinessRepository,
         private val clientRepository: ClientRepository,
         private val jobRepository: JobRepository,
-        private val quoteRepository: QuoteRepository
+        private val quoteRepository: QuoteRepository,
+        private val activationTracker: ActivationTracker
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            InvoiceFormViewModel(invoiceRepository, lineItemRepository, businessRepository, clientRepository, jobRepository, quoteRepository) as T
+            InvoiceFormViewModel(invoiceRepository, lineItemRepository, businessRepository, clientRepository, jobRepository, quoteRepository, activationTracker) as T
     }
 }
 

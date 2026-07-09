@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.servicesphere.activation.ActivationEvents
+import com.servicesphere.activation.ActivationParams
+import com.servicesphere.activation.ActivationTracker
 import com.servicesphere.billing.FeatureGateManager
 import com.servicesphere.pdf.PdfShareManager
 import com.servicesphere.pdf.ServiceSpherePdfGenerator
@@ -26,7 +29,8 @@ class QuotePdfActionViewModel(
     private val appContext: Context,
     private val generator: ServiceSpherePdfGenerator,
     private val shareManager: PdfShareManager,
-    private val featureGateManager: FeatureGateManager
+    private val featureGateManager: FeatureGateManager,
+    private val activationTracker: ActivationTracker
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(PdfActionUiState())
     val uiState: StateFlow<PdfActionUiState> = _uiState.asStateFlow()
@@ -37,6 +41,7 @@ class QuotePdfActionViewModel(
             val result = generator.generateQuotePdf(appContext, quoteId, pdfLogoAllowed(), featureGateManager.shouldShowPdfWatermark())
             _uiState.update {
                 if (result.success) {
+                    trackPdfGenerated("quote", "quote_detail")
                     it.copy(isGeneratingPdf = false, generatedPdfPath = result.filePath, pdfSuccessMessage = "Quote PDF generated")
                 } else {
                     it.copy(isGeneratingPdf = false, pdfErrorMessage = result.errorMessage ?: "Couldn't generate quote PDF")
@@ -54,6 +59,7 @@ class QuotePdfActionViewModel(
                 return@launch
             }
             val shareError = shareManager.sharePdf(result.filePath, "Share Quote PDF")
+            if (shareError == null) trackPdfGenerated("quote", "quote_detail")
             _uiState.update {
                 if (shareError == null) it.copy(isGeneratingPdf = false, generatedPdfPath = result.filePath, quoteShareSuccessEventId = System.currentTimeMillis())
                 else it.copy(isGeneratingPdf = false, generatedPdfPath = result.filePath, pdfErrorMessage = shareError)
@@ -65,16 +71,27 @@ class QuotePdfActionViewModel(
 
     private suspend fun pdfLogoAllowed(): Boolean = featureGateManager.canUseBusinessLogoOnPdf().allowed
 
+    private fun trackPdfGenerated(documentType: String, sourceScreen: String) {
+        activationTracker.trackFirst(
+            ActivationEvents.FIRST_PDF_GENERATED,
+            mapOf(
+                ActivationParams.SOURCE_SCREEN to sourceScreen,
+                ActivationParams.DOCUMENT_TYPE to documentType
+            )
+        )
+    }
+
     class Factory(
         private val quoteId: String,
         private val appContext: Context,
         private val generator: ServiceSpherePdfGenerator,
         private val shareManager: PdfShareManager,
-        private val featureGateManager: FeatureGateManager
+        private val featureGateManager: FeatureGateManager,
+        private val activationTracker: ActivationTracker
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            QuotePdfActionViewModel(quoteId, appContext, generator, shareManager, featureGateManager) as T
+            QuotePdfActionViewModel(quoteId, appContext, generator, shareManager, featureGateManager, activationTracker) as T
     }
 }
 
@@ -83,7 +100,8 @@ class InvoicePdfActionViewModel(
     private val appContext: Context,
     private val generator: ServiceSpherePdfGenerator,
     private val shareManager: PdfShareManager,
-    private val featureGateManager: FeatureGateManager
+    private val featureGateManager: FeatureGateManager,
+    private val activationTracker: ActivationTracker
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(PdfActionUiState())
     val uiState: StateFlow<PdfActionUiState> = _uiState.asStateFlow()
@@ -94,6 +112,7 @@ class InvoicePdfActionViewModel(
             val result = generator.generateInvoicePdf(appContext, invoiceId, pdfLogoAllowed(), featureGateManager.shouldShowPdfWatermark())
             _uiState.update {
                 if (result.success) {
+                    trackPdfGenerated("invoice", "invoice_detail")
                     it.copy(isGeneratingPdf = false, generatedPdfPath = result.filePath, pdfSuccessMessage = "Invoice PDF generated")
                 } else {
                     it.copy(isGeneratingPdf = false, pdfErrorMessage = result.errorMessage ?: "Couldn't generate invoice PDF")
@@ -111,6 +130,7 @@ class InvoicePdfActionViewModel(
                 return@launch
             }
             val shareError = shareManager.sharePdf(result.filePath, "Share Invoice PDF")
+            if (shareError == null) trackPdfGenerated("invoice", "invoice_detail")
             _uiState.update {
                 if (shareError == null) it.copy(isGeneratingPdf = false, generatedPdfPath = result.filePath)
                 else it.copy(isGeneratingPdf = false, generatedPdfPath = result.filePath, pdfErrorMessage = shareError)
@@ -122,15 +142,26 @@ class InvoicePdfActionViewModel(
 
     private suspend fun pdfLogoAllowed(): Boolean = featureGateManager.canUseBusinessLogoOnPdf().allowed
 
+    private fun trackPdfGenerated(documentType: String, sourceScreen: String) {
+        activationTracker.trackFirst(
+            ActivationEvents.FIRST_PDF_GENERATED,
+            mapOf(
+                ActivationParams.SOURCE_SCREEN to sourceScreen,
+                ActivationParams.DOCUMENT_TYPE to documentType
+            )
+        )
+    }
+
     class Factory(
         private val invoiceId: String,
         private val appContext: Context,
         private val generator: ServiceSpherePdfGenerator,
         private val shareManager: PdfShareManager,
-        private val featureGateManager: FeatureGateManager
+        private val featureGateManager: FeatureGateManager,
+        private val activationTracker: ActivationTracker
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            InvoicePdfActionViewModel(invoiceId, appContext, generator, shareManager, featureGateManager) as T
+            InvoicePdfActionViewModel(invoiceId, appContext, generator, shareManager, featureGateManager, activationTracker) as T
     }
 }

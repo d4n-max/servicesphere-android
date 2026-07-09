@@ -36,7 +36,9 @@ import com.servicesphere.ui.theme.ServiceSphereTextSecondary
 fun DataExportScreen(
     onBack: () -> Unit,
     onDeleteComplete: (resetSetup: Boolean) -> Unit,
-    viewModel: DataExportViewModel = viewModel(factory = DataExportViewModel.Factory(ServiceLocator.dataExportManager))
+    viewModel: DataExportViewModel = viewModel(
+        factory = DataExportViewModel.Factory(ServiceLocator.dataExportManager, ServiceLocator.activationTracker)
+    )
 ) {
     val state by viewModel.uiState.collectAsState()
 

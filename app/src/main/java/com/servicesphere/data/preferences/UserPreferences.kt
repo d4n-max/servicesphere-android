@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -13,7 +14,11 @@ import com.servicesphere.reminders.ReminderTypes
 
 private val Context.dataStore by preferencesDataStore("servicesphere_preferences")
 
-class UserPreferences(context: Context) {
+interface AnalyticsOnceStore {
+    suspend fun markAnalyticsEventTrackedOnce(eventName: String): Boolean
+}
+
+class UserPreferences(context: Context) : AnalyticsOnceStore {
     private val dataStore = context.dataStore
     private val onboardingCompleteKey = booleanPreferencesKey("onboarding_complete")
     private val businessSetupCompleteKey = booleanPreferencesKey("business_setup_complete")
@@ -32,6 +37,7 @@ class UserPreferences(context: Context) {
     private val appSessionCountKey = intPreferencesKey("app_session_count")
     private val firstRealJobCreatedKey = booleanPreferencesKey("first_real_job_created")
     private val sampleJobIdKey = stringPreferencesKey("sample_job_id")
+    private val trackedAnalyticsEventsKey = stringSetPreferencesKey("tracked_analytics_events")
 
     val hasCompletedOnboarding: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[onboardingCompleteKey] ?: false
@@ -190,6 +196,18 @@ class UserPreferences(context: Context) {
         dataStore.edit { preferences ->
             if (jobId.isNullOrBlank()) preferences.remove(sampleJobIdKey) else preferences[sampleJobIdKey] = jobId
         }
+    }
+
+    override suspend fun markAnalyticsEventTrackedOnce(eventName: String): Boolean {
+        var shouldTrack = false
+        dataStore.edit { preferences ->
+            val trackedEvents = preferences[trackedAnalyticsEventsKey].orEmpty()
+            if (eventName !in trackedEvents) {
+                preferences[trackedAnalyticsEventsKey] = trackedEvents + eventName
+                shouldTrack = true
+            }
+        }
+        return shouldTrack
     }
 
     suspend fun resetSetupState() {

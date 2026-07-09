@@ -3,6 +3,10 @@ package com.servicesphere.ui.screens.quotes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.servicesphere.activation.ActivationEvents
+import com.servicesphere.activation.ActivationParams
+import com.servicesphere.activation.ActivationTracker
+import com.servicesphere.activation.AnalyticsValueBuckets
 import com.servicesphere.data.local.BusinessProfileEntity
 import com.servicesphere.data.local.ClientEntity
 import com.servicesphere.data.local.JobEntity
@@ -81,7 +85,8 @@ class QuoteFormViewModel(
     private val lineItemRepository: LineItemRepository,
     private val businessRepository: BusinessRepository,
     private val clientRepository: ClientRepository,
-    private val jobRepository: JobRepository
+    private val jobRepository: JobRepository,
+    private val activationTracker: ActivationTracker
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(QuoteFormUiState())
     val uiState: StateFlow<QuoteFormUiState> = _uiState.asStateFlow()
@@ -222,6 +227,16 @@ class QuoteFormViewModel(
                 if (validated.isEditing) quoteRepository.updateQuote(quote) else {
                     quoteRepository.insertQuote(quote)
                     incrementQuoteNumber()
+                    activationTracker.trackFirst(
+                        ActivationEvents.FIRST_QUOTE_CREATED,
+                        mapOf(
+                            ActivationParams.SOURCE_SCREEN to "quote_form",
+                            ActivationParams.HAS_CLIENT to (quote.clientId != null).toString(),
+                            ActivationParams.ITEM_COUNT to validated.lineItems.size.toString(),
+                            ActivationParams.VALUE_BUCKET to AnalyticsValueBuckets.fromAmount(quote.total),
+                            ActivationParams.CURRENCY to (businessRepository.getBusinessProfileOnce()?.currencyCode ?: "USD")
+                        )
+                    )
                 }
                 lineItemRepository.deleteLineItemsForParent(id, LineItemParentType.QUOTE)
                 lineItemRepository.insertLineItems(validated.lineItems.mapIndexed { index, item ->
@@ -343,11 +358,12 @@ class QuoteFormViewModel(
         private val lineItemRepository: LineItemRepository,
         private val businessRepository: BusinessRepository,
         private val clientRepository: ClientRepository,
-        private val jobRepository: JobRepository
+        private val jobRepository: JobRepository,
+        private val activationTracker: ActivationTracker
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            QuoteFormViewModel(quoteRepository, lineItemRepository, businessRepository, clientRepository, jobRepository) as T
+            QuoteFormViewModel(quoteRepository, lineItemRepository, businessRepository, clientRepository, jobRepository, activationTracker) as T
     }
 }
 

@@ -60,7 +60,8 @@ fun QuoteFormScreen(
             ServiceLocator.lineItemRepository,
             ServiceLocator.businessRepository,
             ServiceLocator.clientRepository,
-            ServiceLocator.jobRepository
+            ServiceLocator.jobRepository,
+            ServiceLocator.activationTracker
         )
     )
 ) {

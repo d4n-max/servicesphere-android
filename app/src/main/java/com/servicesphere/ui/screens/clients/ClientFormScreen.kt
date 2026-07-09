@@ -43,7 +43,7 @@ fun ClientFormScreen(
     onSaved: (String) -> Unit,
     onCancel: () -> Unit,
     viewModel: ClientFormViewModel = viewModel(
-        factory = ClientFormViewModel.Factory(ServiceLocator.clientRepository)
+        factory = ClientFormViewModel.Factory(ServiceLocator.clientRepository, ServiceLocator.activationTracker)
     )
 ) {
     val uiState by viewModel.uiState.collectAsState()

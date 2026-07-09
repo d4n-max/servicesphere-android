@@ -1,5 +1,14 @@
 # Release Notes
 
+## Version 1.0.1
+- Added production Firebase Analytics activation tracking for key field service workflows.
+- Tracks first client, first job, quote, invoice, photo proof, signature, PDF, and data export milestones without storing personal customer data.
+- Added the primary activation event for measuring users who organize their first service job with useful details.
+- Improved readiness for Google Search Ads conversion measurement across jobs, clients, quotes, invoices, photo proof, signatures, and PDF export.
+
+## Play Console Release Notes
+Improved analytics for field service job management. ServiceSphere now measures key activation milestones like first client, job, quote, invoice, photo proof, signature, PDF export, and local data export without logging customer details.
+
 ## Version 1.0.0
 - Removed a misleading hamburger icon from the top bar where bottom navigation is the active app navigation model.
 - Added Settings actions for rating ServiceSphere on Google Play and reading in-app Help & Support FAQs.

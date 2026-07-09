@@ -4,6 +4,9 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.servicesphere.activation.ActivationEvents
+import com.servicesphere.activation.ActivationParams
+import com.servicesphere.activation.ActivationTracker
 import com.servicesphere.data.export.DataExportManager
 import com.servicesphere.data.export.ExportResult
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,16 +30,17 @@ data class DataExportUiState(
 )
 
 class DataExportViewModel(
-    private val exportManager: DataExportManager
+    private val exportManager: DataExportManager,
+    private val activationTracker: ActivationTracker
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(DataExportUiState())
     val uiState: StateFlow<DataExportUiState> = _uiState.asStateFlow()
 
-    fun exportBackupJson() = runExport(exportManager::exportBackupJson)
-    fun exportClientsCsv() = runExport(exportManager::exportClientsCsv)
-    fun exportJobsCsv() = runExport(exportManager::exportJobsCsv)
-    fun exportQuotesCsv() = runExport(exportManager::exportQuotesCsv)
-    fun exportInvoicesCsv() = runExport(exportManager::exportInvoicesCsv)
+    fun exportBackupJson() = runExport("backup_json", exportManager::exportBackupJson)
+    fun exportClientsCsv() = runExport("clients_csv", exportManager::exportClientsCsv)
+    fun exportJobsCsv() = runExport("jobs_csv", exportManager::exportJobsCsv)
+    fun exportQuotesCsv() = runExport("quotes_csv", exportManager::exportQuotesCsv)
+    fun exportInvoicesCsv() = runExport("invoices_csv", exportManager::exportInvoicesCsv)
 
     fun shareLastExport() {
         val state = uiState.value
@@ -109,11 +113,18 @@ class DataExportViewModel(
         _uiState.update { it.copy(deleteComplete = false) }
     }
 
-    private fun runExport(export: suspend () -> ExportResult) {
+    private fun runExport(exportType: String, export: suspend () -> ExportResult) {
         viewModelScope.launch {
             _uiState.update { it.copy(isExporting = true, errorMessage = null, successMessage = null) }
             val result = export()
             if (result.success && result.fileUri != null) {
+                activationTracker.track(
+                    ActivationEvents.DATA_EXPORT_CREATED,
+                    mapOf(
+                        ActivationParams.SOURCE_SCREEN to "data_export",
+                        ActivationParams.EXPORT_TYPE to exportType
+                    )
+                )
                 _uiState.update {
                     it.copy(
                         isExporting = false,
@@ -133,9 +144,12 @@ class DataExportViewModel(
         }
     }
 
-    class Factory(private val exportManager: DataExportManager) : ViewModelProvider.Factory {
+    class Factory(
+        private val exportManager: DataExportManager,
+        private val activationTracker: ActivationTracker
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = DataExportViewModel(exportManager) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>): T = DataExportViewModel(exportManager, activationTracker) as T
     }
 }
 

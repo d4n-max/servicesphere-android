@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.servicesphere.activation.ActivationEvents
+import com.servicesphere.activation.ActivationParams
 import com.servicesphere.activation.ActivationTracker
 import com.servicesphere.data.local.ClientEntity
 import com.servicesphere.data.local.JobEntity
@@ -102,7 +103,10 @@ class FirstJobViewModel(
                     updatedAt = now
                 )
                 clientRepository.insertClient(client)
-                activationTracker.track(ActivationEvents.FIRST_CLIENT_CREATED)
+                activationTracker.trackFirst(
+                    ActivationEvents.FIRST_CLIENT_CREATED,
+                    mapOf(ActivationParams.SOURCE_SCREEN to "first_job")
+                )
                 val job = JobEntity(
                     clientId = client.id,
                     title = current.jobTitle.trim(),
@@ -117,9 +121,16 @@ class FirstJobViewModel(
                 jobRepository.insertJob(job)
                 preferences.setOnboardingComplete(true)
                 preferences.setFirstRealJobCreated(true)
-                activationTracker.track(ActivationEvents.FIRST_JOB_CREATED)
-                if (!job.internalNotes.isNullOrBlank() || !job.address.isNullOrBlank() || job.estimatedPrice != null) {
-                    activationTracker.track(ActivationEvents.ACTIVATION_FIRST_JOB_ORGANIZED)
+                val params = mapOf(
+                    ActivationParams.SOURCE_SCREEN to "first_job",
+                    ActivationParams.HAS_CLIENT to "true",
+                    ActivationParams.HAS_SCHEDULE to (job.scheduledAt != null).toString(),
+                    ActivationParams.HAS_DETAILS to job.hasUsefulDetails().toString(),
+                    ActivationParams.JOB_STATUS to job.status
+                )
+                activationTracker.trackFirst(ActivationEvents.FIRST_JOB_CREATED, params)
+                if (job.clientId != null || job.scheduledAt != null || job.hasUsefulDetails()) {
+                    activationTracker.trackFirst(ActivationEvents.ACTIVATION_FIRST_JOB_ORGANIZED, params)
                 }
                 job.id
             }.onSuccess { jobId ->
@@ -193,6 +204,9 @@ class FirstJobViewModel(
     }
 
     private suspend fun Flow<String?>.valueOrNull(): String? = first()
+
+    private fun JobEntity.hasUsefulDetails(): Boolean =
+        !description.isNullOrBlank() || !address.isNullOrBlank() || estimatedPrice != null || !internalNotes.isNullOrBlank()
 
     class Factory(
         private val clientRepository: ClientRepository,
