@@ -60,6 +60,9 @@ fun InvoiceDetailScreen(
     onComposeMessage: (MessageTemplateType) -> Unit,
     onCaptureSignature: () -> Unit,
     onGateBlocked: (FeatureGateResult) -> Unit,
+    onOpenClient: (String) -> Unit,
+    onOpenJob: (String) -> Unit,
+    onOpenQuote: (String) -> Unit,
     viewModel: InvoiceDetailViewModel = viewModel(
         factory = InvoiceDetailViewModel.Factory(
             invoiceId,
@@ -159,6 +162,16 @@ fun InvoiceDetailScreen(
                     }
                     uiState.errorMessage?.let { message -> item { ServiceSphereCard { Text(message, color = ServiceSphereDanger) } } }
                     item { InvoiceInfoCard(invoice, uiState.lineItems) }
+                    item {
+                        ServiceSphereCard {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Text("Related records", fontWeight = FontWeight.Bold)
+                                invoice.clientId?.let { ServiceSphereOutlinedButton("Client", Modifier.fillMaxWidth(), onClick = { onOpenClient(it) }) }
+                                invoice.jobId?.let { ServiceSphereOutlinedButton("Source job", Modifier.fillMaxWidth(), onClick = { onOpenJob(it) }) }
+                                invoice.quoteId?.let { ServiceSphereOutlinedButton("Source quote", Modifier.fillMaxWidth(), onClick = { onOpenQuote(it) }) }
+                            }
+                        }
+                    }
                     item { InvoiceMessageActions(invoice, onComposeMessage) }
                     item {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {

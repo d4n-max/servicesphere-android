@@ -49,6 +49,7 @@ enum class CalendarRange(val label: String) {
 data class JobUiModel(
     val id: String,
     val clientId: String?,
+    val sourceQuoteId: String?,
     val clientName: String?,
     val clientPhone: String?,
     val clientEmail: String?,
@@ -260,6 +261,7 @@ class JobsViewModel(
 fun JobEntity.toUiModel(client: ClientEntity?, hasReminder: Boolean = false): JobUiModel = JobUiModel(
     id = id,
     clientId = clientId,
+    sourceQuoteId = sourceQuoteId,
     clientName = client?.name,
     clientPhone = client?.phone,
     clientEmail = client?.email,

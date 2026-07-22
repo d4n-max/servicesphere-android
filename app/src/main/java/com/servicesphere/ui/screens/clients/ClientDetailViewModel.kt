@@ -5,6 +5,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.servicesphere.data.local.ClientEntity
 import com.servicesphere.data.repository.ClientRepository
+import com.servicesphere.data.repository.InvoiceRepository
+import com.servicesphere.data.repository.JobRepository
+import com.servicesphere.data.repository.QuoteRepository
+import com.servicesphere.ui.timeline.ActivityTimelineItem
+import com.servicesphere.ui.timeline.buildTimeline
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,25 +23,37 @@ import kotlinx.coroutines.launch
 data class ClientDetailUiState(
     val isLoading: Boolean = true,
     val client: ClientUiModel? = null,
+    val timeline: List<ActivityTimelineItem> = emptyList(),
     val errorMessage: String? = null,
     val deleteSuccess: Boolean = false
 )
 
 class ClientDetailViewModel(
     private val clientId: String,
-    private val clientRepository: ClientRepository
+    private val clientRepository: ClientRepository,
+    jobRepository: JobRepository,
+    quoteRepository: QuoteRepository,
+    invoiceRepository: InvoiceRepository
 ) : ViewModel() {
     private val errorMessage = MutableStateFlow<String?>(null)
     private val deleteSuccess = MutableStateFlow(false)
 
-    val uiState: StateFlow<ClientDetailUiState> = combine(
+    private val activityRows = combine(
         clientRepository.observeClientById(clientId),
+        jobRepository.observeJobs(),
+        quoteRepository.observeQuotes(),
+        invoiceRepository.observeInvoices()
+    ) { client, jobs, quotes, invoices -> ClientActivityRows(client, jobs, quotes, invoices) }
+
+    val uiState: StateFlow<ClientDetailUiState> = combine(
+        activityRows,
         errorMessage,
         deleteSuccess
-    ) { client, error, deleted ->
+    ) { rows, error, deleted ->
         ClientDetailUiState(
             isLoading = false,
-            client = client?.toUiModel(),
+            client = rows.client?.toUiModel(),
+            timeline = buildTimeline(rows.quotes.filter { it.clientId == clientId }, rows.jobs.filter { it.clientId == clientId }, rows.invoices.filter { it.clientId == clientId }),
             errorMessage = error,
             deleteSuccess = deleted
         )
@@ -68,11 +85,21 @@ class ClientDetailViewModel(
 
     class Factory(
         private val clientId: String,
-        private val clientRepository: ClientRepository
+        private val clientRepository: ClientRepository,
+        private val jobRepository: JobRepository,
+        private val quoteRepository: QuoteRepository,
+        private val invoiceRepository: InvoiceRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ClientDetailViewModel(clientId, clientRepository) as T
+            return ClientDetailViewModel(clientId, clientRepository, jobRepository, quoteRepository, invoiceRepository) as T
         }
     }
 }
+
+private data class ClientActivityRows(
+    val client: ClientEntity?,
+    val jobs: List<com.servicesphere.data.local.JobEntity>,
+    val quotes: List<com.servicesphere.data.local.QuoteEntity>,
+    val invoices: List<com.servicesphere.data.local.InvoiceEntity>
+)

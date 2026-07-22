@@ -90,6 +90,8 @@ import com.servicesphere.ui.theme.ServiceSphereDanger
 import com.servicesphere.ui.theme.ServiceSpherePrimary
 import com.servicesphere.ui.theme.ServiceSphereSecondaryContainer
 import com.servicesphere.ui.theme.ServiceSphereTextSecondary
+import com.servicesphere.ui.timeline.ActivityTimeline
+import com.servicesphere.ui.timeline.TimelineTarget
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
@@ -102,6 +104,8 @@ fun JobDetailScreen(
     onDeleted: () -> Unit,
     onCreateQuote: () -> Unit,
     onCreateInvoice: () -> Unit,
+    onOpenQuote: (String) -> Unit,
+    onOpenInvoice: (String) -> Unit,
     onComposeMessage: (MessageTemplateType) -> Unit,
     onCaptureSignature: () -> Unit,
     onPhotoGateBlocked: (FeatureGateResult) -> Unit,
@@ -115,7 +119,11 @@ fun JobDetailScreen(
             ServiceLocator.jobRepository,
             ServiceLocator.clientRepository,
             ServiceLocator.jobReminderRepository,
-            ServiceLocator.reminderScheduler
+            ServiceLocator.reminderScheduler,
+            ServiceLocator.workflowRepository,
+            ServiceLocator.quoteRepository,
+            ServiceLocator.invoiceRepository,
+            ServiceLocator.analyticsTracker
         )
     )
 ) {
@@ -184,6 +192,12 @@ fun JobDetailScreen(
 
     LaunchedEffect(uiState.deleteSuccess) {
         if (uiState.deleteSuccess) onDeleted()
+    }
+    LaunchedEffect(uiState.convertedInvoiceId) {
+        uiState.convertedInvoiceId?.let { invoiceId ->
+            viewModel.clearConvertedInvoice()
+            onOpenInvoice(invoiceId)
+        }
     }
     LaunchedEffect(Unit) {
         viewModel.statusUpdateEvents.collect { status ->
@@ -291,6 +305,13 @@ fun JobDetailScreen(
                             onCaptureSignature = onCaptureSignature
                         )
                     }
+                    if (job.status != JobStatus.CANCELLED) item {
+                        ServiceSphereButton(
+                            if (uiState.isConverting) "Creating invoice..." else if (uiState.linkedInvoiceId != null) "View invoice" else "Create invoice",
+                            Modifier.fillMaxWidth(),
+                            onClick = { uiState.linkedInvoiceId?.let(onOpenInvoice) ?: viewModel.createInvoice() }
+                        )
+                    }
                     item { JobMessageActions(onComposeMessage) }
                     item {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -325,10 +346,16 @@ fun JobDetailScreen(
                             onDelete = { signatureToDelete = it }
                         )
                     }
-                    item { SectionHeader("Quotes") }
-                    item { PlaceholderSection("Quotes linked to this job will appear here") }
-                    item { SectionHeader("Invoices") }
-                    item { PlaceholderSection("Invoices linked to this job will appear here") }
+                    item {
+                        ServiceSphereCard {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Text("Related records", fontWeight = FontWeight.Bold)
+                                uiState.sourceQuoteId?.let { ServiceSphereOutlinedButton("Source quote", Modifier.fillMaxWidth(), onClick = { onOpenQuote(it) }) }
+                                uiState.linkedInvoiceId?.let { ServiceSphereOutlinedButton("Invoice", Modifier.fillMaxWidth(), onClick = { onOpenInvoice(it) }) }
+                            }
+                        }
+                    }
+                    item { ActivityTimeline(uiState.timeline) { target, id -> when (target) { TimelineTarget.QUOTE -> onOpenQuote(id); TimelineTarget.INVOICE -> onOpenInvoice(id); TimelineTarget.JOB -> Unit } } }
                 }
             }
         }
@@ -742,11 +769,6 @@ private fun DeletePhotoDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
         confirmButton = { TextButton(onClick = onConfirm) { Text("Delete", color = ServiceSphereDanger) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
     )
-}
-
-@Composable
-private fun PlaceholderSection(message: String) {
-    ServiceSphereCard { Text(message, color = ServiceSphereTextSecondary) }
 }
 
 private fun formatSimpleDate(timestamp: Long): String =

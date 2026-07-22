@@ -59,6 +59,7 @@ class JobRepository(private val dao: JobDao) {
     suspend fun updateJob(job: JobEntity) = dao.updateJob(job)
     suspend fun deleteJob(job: JobEntity) = dao.deleteJob(job)
     suspend fun getJobByIdOnce(id: String): JobEntity? = dao.getJobByIdOnce(id)
+    suspend fun getJobBySourceQuoteIdOnce(quoteId: String): JobEntity? = dao.getJobBySourceQuoteIdOnce(quoteId)
     fun observeJobCount(): Flow<Int> = dao.observeJobCount()
 }
 
@@ -124,6 +125,8 @@ class InvoiceRepository(private val dao: InvoiceDao) {
     suspend fun updateInvoice(invoice: InvoiceEntity) = dao.updateInvoice(invoice)
     suspend fun deleteInvoice(invoice: InvoiceEntity) = dao.deleteInvoice(invoice)
     suspend fun getInvoiceByIdOnce(id: String): InvoiceEntity? = dao.getInvoiceByIdOnce(id)
+    suspend fun getInvoiceBySourceJobIdOnce(jobId: String): InvoiceEntity? = dao.getInvoiceBySourceJobIdOnce(jobId)
+    suspend fun getInvoiceBySourceQuoteIdOnce(quoteId: String): InvoiceEntity? = dao.getInvoiceBySourceQuoteIdOnce(quoteId)
     fun observeUnpaidInvoiceCount(): Flow<Int> = dao.observeUnpaidInvoiceCount()
 }
 
@@ -138,6 +141,7 @@ class LineItemRepository(private val dao: LineItemDao) {
 
 class JobPhotoRepository(private val dao: JobPhotoDao) {
     fun observePhotosForJob(jobId: String): Flow<List<JobPhotoEntity>> = dao.observePhotosForJob(jobId)
+    fun observeAllPhotos(): Flow<List<JobPhotoEntity>> = dao.observeAllPhotos()
     suspend fun insertPhoto(photo: JobPhotoEntity) = dao.insertPhoto(photo)
     suspend fun updatePhoto(photo: JobPhotoEntity) = dao.updatePhoto(photo)
     suspend fun deletePhoto(photo: JobPhotoEntity) = dao.deletePhoto(photo)
@@ -147,6 +151,7 @@ class JobPhotoRepository(private val dao: JobPhotoDao) {
 class SignatureRepository(private val dao: SignatureDao) {
     fun observeSignaturesForJob(jobId: String): Flow<List<SignatureEntity>> = dao.observeSignaturesForJob(jobId)
     fun observeSignaturesForInvoice(invoiceId: String): Flow<List<SignatureEntity>> = dao.observeSignaturesForInvoice(invoiceId)
+    fun observeAllSignatures(): Flow<List<SignatureEntity>> = dao.observeAllSignatures()
     suspend fun insertSignature(signature: SignatureEntity) = dao.insertSignature(signature)
     suspend fun updateSignature(signature: SignatureEntity) = dao.updateSignature(signature)
     suspend fun deleteSignature(signature: SignatureEntity) = dao.deleteSignature(signature)

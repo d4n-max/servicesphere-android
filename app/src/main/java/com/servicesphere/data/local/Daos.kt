@@ -112,6 +112,9 @@ interface JobDao {
     @Query("SELECT * FROM jobs WHERE id = :id LIMIT 1")
     suspend fun getJobByIdOnce(id: String): JobEntity?
 
+    @Query("SELECT * FROM jobs WHERE sourceQuoteId = :quoteId LIMIT 1")
+    suspend fun getJobBySourceQuoteIdOnce(quoteId: String): JobEntity?
+
     @Query("SELECT COUNT(*) FROM jobs")
     fun observeJobCount(): Flow<Int>
 
@@ -258,6 +261,12 @@ interface InvoiceDao {
     @Query("SELECT * FROM invoices WHERE id = :id LIMIT 1")
     suspend fun getInvoiceByIdOnce(id: String): InvoiceEntity?
 
+    @Query("SELECT * FROM invoices WHERE jobId = :jobId LIMIT 1")
+    suspend fun getInvoiceBySourceJobIdOnce(jobId: String): InvoiceEntity?
+
+    @Query("SELECT * FROM invoices WHERE quoteId = :quoteId LIMIT 1")
+    suspend fun getInvoiceBySourceQuoteIdOnce(quoteId: String): InvoiceEntity?
+
     @Query("SELECT COUNT(*) FROM invoices WHERE status IN ('UNPAID', 'SENT', 'OVERDUE')")
     fun observeUnpaidInvoiceCount(): Flow<Int>
 
@@ -300,6 +309,9 @@ interface JobPhotoDao {
     @Query("SELECT * FROM job_photos WHERE jobId = :jobId ORDER BY createdAt DESC")
     fun observePhotosForJob(jobId: String): Flow<List<JobPhotoEntity>>
 
+    @Query("SELECT * FROM job_photos ORDER BY createdAt DESC")
+    fun observeAllPhotos(): Flow<List<JobPhotoEntity>>
+
     @Insert
     suspend fun insertPhoto(photo: JobPhotoEntity)
 
@@ -326,6 +338,9 @@ interface SignatureDao {
 
     @Query("SELECT * FROM signatures WHERE invoiceId = :invoiceId ORDER BY createdAt DESC")
     fun observeSignaturesForInvoice(invoiceId: String): Flow<List<SignatureEntity>>
+
+    @Query("SELECT * FROM signatures ORDER BY createdAt DESC")
+    fun observeAllSignatures(): Flow<List<SignatureEntity>>
 
     @Insert
     suspend fun insertSignature(signature: SignatureEntity)

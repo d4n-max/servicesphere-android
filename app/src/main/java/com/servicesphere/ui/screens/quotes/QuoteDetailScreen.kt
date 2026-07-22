@@ -53,6 +53,7 @@ fun QuoteDetailScreen(
     onEdit: (String) -> Unit,
     onDeleted: () -> Unit,
     onConvertedToInvoice: (String) -> Unit,
+    onOpenJob: (String) -> Unit,
     onComposeMessage: (MessageTemplateType) -> Unit,
     onGateBlocked: (FeatureGateResult) -> Unit,
     onQuoteShared: () -> Unit,
@@ -62,16 +63,16 @@ fun QuoteDetailScreen(
             ServiceLocator.quoteRepository,
             ServiceLocator.lineItemRepository,
             ServiceLocator.clientRepository,
-            ServiceLocator.jobRepository
+            ServiceLocator.jobRepository,
+            ServiceLocator.invoiceRepository,
+            ServiceLocator.workflowRepository,
+            ServiceLocator.analyticsTracker
         )
     ),
     conversionViewModel: ConvertQuoteToInvoiceViewModel = viewModel(
         factory = ConvertQuoteToInvoiceViewModel.Factory(
             quoteId,
-            ServiceLocator.quoteRepository,
-            ServiceLocator.invoiceRepository,
-            ServiceLocator.lineItemRepository,
-            ServiceLocator.businessRepository
+            ServiceLocator.workflowRepository
         )
     ),
     pdfViewModel: QuotePdfActionViewModel = viewModel(
@@ -124,6 +125,12 @@ fun QuoteDetailScreen(
             pdfViewModel.clearPdfMessage()
         }
     }
+    LaunchedEffect(uiState.createdJobId) {
+        uiState.createdJobId?.let { jobId ->
+            viewModel.clearCreatedJob()
+            onOpenJob(jobId)
+        }
+    }
     LaunchedEffect(pdfState.quoteShareSuccessEventId) {
         if (pdfState.quoteShareSuccessEventId != null) onQuoteShared()
     }
@@ -148,6 +155,23 @@ fun QuoteDetailScreen(
                     }
                     uiState.errorMessage?.let { message -> item { ServiceSphereCard { Text(message, color = ServiceSphereDanger) } } }
                     item { QuoteInfoCard(quote, uiState.lineItems) }
+                    item {
+                        ServiceSphereButton(
+                            if (uiState.isCreatingJob) "Creating job..." else if (uiState.linkedJobId != null) "View linked job" else "Create job from quote",
+                            Modifier.fillMaxWidth(),
+                            onClick = { uiState.linkedJobId?.let(onOpenJob) ?: viewModel.createJobFromQuote() }
+                        )
+                    }
+                    item {
+                        ServiceSphereCard {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Text("Related records", fontWeight = FontWeight.Bold)
+                                quote.jobId?.let { ServiceSphereOutlinedButton("Source job", Modifier.fillMaxWidth(), onClick = { onOpenJob(it) }) }
+                                uiState.linkedJobId?.let { ServiceSphereOutlinedButton("Created job", Modifier.fillMaxWidth(), onClick = { onOpenJob(it) }) }
+                                uiState.linkedInvoiceId?.let { ServiceSphereOutlinedButton("Created invoice", Modifier.fillMaxWidth(), onClick = { onConvertedToInvoice(it) }) }
+                            }
+                        }
+                    }
                     item { QuoteMessageActions(onComposeMessage) }
                     item {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {

@@ -14,6 +14,7 @@ import com.servicesphere.billing.SubscriptionRepository
 import com.servicesphere.data.local.AppDatabase
 import com.servicesphere.data.local.DemoDataSeeder
 import com.servicesphere.data.local.MIGRATION_1_2
+import com.servicesphere.data.local.MIGRATION_2_3
 import com.servicesphere.data.export.DataExportManager
 import com.servicesphere.data.preferences.UserPreferences
 import com.servicesphere.data.repository.BusinessRepository
@@ -27,6 +28,7 @@ import com.servicesphere.data.repository.LineItemRepository
 import com.servicesphere.data.repository.QuoteRepository
 import com.servicesphere.data.repository.ServiceSphereRepository
 import com.servicesphere.data.repository.SignatureRepository
+import com.servicesphere.data.repository.WorkflowRepository
 import com.servicesphere.pdf.PdfService
 import com.servicesphere.pdf.ServiceSpherePdfService
 import com.servicesphere.review.ReviewPromptManager
@@ -89,7 +91,7 @@ object ServiceLocator {
             context.applicationContext,
             AppDatabase::class.java,
             "servicesphere.db"
-        ).addMigrations(MIGRATION_1_2).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
         preferences = UserPreferences(context)
         repository = FakeServiceSphereRepository()
         businessRepository = BusinessRepository(database.businessProfileDao())
@@ -101,6 +103,7 @@ object ServiceLocator {
         jobPhotoRepository = JobPhotoRepository(database.jobPhotoDao())
         jobReminderRepository = JobReminderRepository(database.jobReminderDao())
         signatureRepository = SignatureRepository(database.signatureDao())
+        workflowRepository = WorkflowRepository(database)
         reminderScheduler = JobReminderScheduler(context.applicationContext)
         reminderScheduler.ensureNotificationChannel()
         seeder = DemoDataSeeder(

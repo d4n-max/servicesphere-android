@@ -45,6 +45,8 @@ import com.servicesphere.ui.components.ServiceSphereCard
 import com.servicesphere.ui.components.ServiceSphereOutlinedButton
 import com.servicesphere.ui.theme.ServiceSphereDanger
 import com.servicesphere.ui.theme.ServiceSphereTextSecondary
+import com.servicesphere.ui.timeline.ActivityTimeline
+import com.servicesphere.ui.timeline.TimelineTarget
 import java.text.DateFormat
 import java.util.Date
 
@@ -58,8 +60,11 @@ fun ClientDetailScreen(
     onNewQuote: () -> Unit,
     onNewInvoice: () -> Unit,
     onComposeMessage: (MessageTemplateType) -> Unit,
+    onOpenQuote: (String) -> Unit,
+    onOpenJob: (String) -> Unit,
+    onOpenInvoice: (String) -> Unit,
     viewModel: ClientDetailViewModel = viewModel(
-        factory = ClientDetailViewModel.Factory(clientId, ServiceLocator.clientRepository)
+        factory = ClientDetailViewModel.Factory(clientId, ServiceLocator.clientRepository, ServiceLocator.jobRepository, ServiceLocator.quoteRepository, ServiceLocator.invoiceRepository)
     )
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -118,12 +123,22 @@ fun ClientDetailScreen(
                 item {
                     ServiceSphereOutlinedButton(label = "Delete Client", modifier = Modifier.fillMaxWidth(), onClick = { showDeleteDialog = true })
                 }
-                item { SectionHeader("Jobs") }
-                item { PlaceholderSection("Jobs for this client will appear here") }
-                item { SectionHeader("Quotes") }
-                item { PlaceholderSection("Quotes for this client will appear here") }
-                item { SectionHeader("Invoices") }
-                item { PlaceholderSection("Invoices for this client will appear here") }
+                item {
+                    if (uiState.timeline.isEmpty()) {
+                        ServiceSphereCard {
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Text("No activity yet", fontWeight = FontWeight.Bold)
+                                Text("Create a quote or job to start this client’s history.", color = ServiceSphereTextSecondary)
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    ServiceSphereOutlinedButton("Create quote", Modifier.weight(1f), onClick = onNewQuote)
+                                    ServiceSphereButton("Create job", Modifier.weight(1f), onClick = onNewJob)
+                                }
+                            }
+                        }
+                    } else ActivityTimeline(uiState.timeline) { target, id ->
+                        when (target) { TimelineTarget.QUOTE -> onOpenQuote(id); TimelineTarget.JOB -> onOpenJob(id); TimelineTarget.INVOICE -> onOpenInvoice(id) }
+                    }
+                }
             }
         }
     }
@@ -216,13 +231,6 @@ private fun ClientQuickActions(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun PlaceholderSection(message: String) {
-    ServiceSphereCard {
-        Text(message, color = ServiceSphereTextSecondary)
     }
 }
 

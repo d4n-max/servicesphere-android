@@ -15,7 +15,7 @@ import androidx.room.RoomDatabase
         SignatureEntity::class,
         JobReminderEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

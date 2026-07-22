@@ -25,3 +25,11 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_job_reminders_hasFired ON job_reminders(hasFired)")
     }
 }
+
+/** Keeps existing independent jobs valid while recording future quote conversions. */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE jobs ADD COLUMN sourceQuoteId TEXT")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_jobs_sourceQuoteId ON jobs(sourceQuoteId)")
+    }
+}

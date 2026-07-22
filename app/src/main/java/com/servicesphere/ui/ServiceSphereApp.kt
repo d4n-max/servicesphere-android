@@ -415,6 +415,8 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                             },
                             onCreateQuote = { runGated(ServiceLocator.featureGateManager::canCreateQuote) { navController.navigate(createQuoteRoute(jobId = jobId)) } },
                             onCreateInvoice = { runGated(ServiceLocator.featureGateManager::canCreateInvoice) { navController.navigate(createInvoiceRoute(jobId = jobId)) } },
+                            onOpenQuote = { id -> navController.navigate(quoteDetailRoute(id)) },
+                            onOpenInvoice = { id -> navController.navigate(invoiceDetailRoute(id)) },
                             onComposeMessage = { type -> navController.navigate(composeMessageRoute(type.routeValue, jobId = jobId)) },
                             onCaptureSignature = { runGated(ServiceLocator.featureGateManager::canCaptureSignature) { navController.navigate(captureSignatureRoute(jobId = jobId)) } },
                             onPhotoGateBlocked = { blockedGate = it },
@@ -490,7 +492,10 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                             onNewJob = { runGated(ServiceLocator.featureGateManager::canCreateJob) { navController.navigate(createJobRoute(clientId)) } },
                             onNewQuote = { runGated(ServiceLocator.featureGateManager::canCreateQuote) { navController.navigate(createQuoteRoute(clientId = clientId)) } },
                             onNewInvoice = { runGated(ServiceLocator.featureGateManager::canCreateInvoice) { navController.navigate(createInvoiceRoute(clientId = clientId)) } },
-                            onComposeMessage = { type -> navController.navigate(composeMessageRoute(type.routeValue, clientId = clientId)) }
+                            onComposeMessage = { type -> navController.navigate(composeMessageRoute(type.routeValue, clientId = clientId)) },
+                            onOpenQuote = { id -> navController.navigate(quoteDetailRoute(id)) },
+                            onOpenJob = { id -> navController.navigate(jobDetailRoute(id)) },
+                            onOpenInvoice = { id -> navController.navigate(invoiceDetailRoute(id)) }
                         )
                     }
                 }
@@ -566,6 +571,7 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                                 }
                             },
                             onConvertedToInvoice = { invoiceId -> navController.navigate(invoiceDetailRoute(invoiceId)) },
+                            onOpenJob = { jobId -> navController.navigate(jobDetailRoute(jobId)) },
                             onComposeMessage = { type -> navController.navigate(composeMessageRoute(type.routeValue, quoteId = quoteId)) },
                             onGateBlocked = { blockedGate = it },
                             onQuoteShared = { recordReviewMoment(ReviewSuccessMoment.QUOTE_SHARED) }
@@ -654,7 +660,10 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                             },
                             onComposeMessage = { type -> navController.navigate(composeMessageRoute(type.routeValue, invoiceId = invoiceId)) },
                             onCaptureSignature = { runGated(ServiceLocator.featureGateManager::canCaptureSignature) { navController.navigate(captureSignatureRoute(invoiceId = invoiceId)) } },
-                            onGateBlocked = { blockedGate = it }
+                            onGateBlocked = { blockedGate = it },
+                            onOpenClient = { id -> navController.navigate(clientDetailRoute(id)) },
+                            onOpenJob = { id -> navController.navigate(jobDetailRoute(id)) },
+                            onOpenQuote = { id -> navController.navigate(quoteDetailRoute(id)) }
                         )
                     }
                 }

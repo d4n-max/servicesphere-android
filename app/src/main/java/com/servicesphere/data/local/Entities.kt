@@ -49,6 +49,7 @@ data class ClientEntity(
     tableName = "jobs",
     indices = [
         Index("clientId"),
+        Index("sourceQuoteId"),
         Index("status"),
         Index("scheduledAt")
     ]
@@ -56,6 +57,8 @@ data class ClientEntity(
 data class JobEntity(
     @PrimaryKey val id: String = uuid(),
     val clientId: String? = null,
+    /** The quote this job was created from, if any. */
+    val sourceQuoteId: String? = null,
     val title: String,
     val description: String? = null,
     val address: String? = null,

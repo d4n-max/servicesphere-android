@@ -149,10 +149,7 @@ class InvoiceDetailViewModel(
 
 class ConvertQuoteToInvoiceViewModel(
     private val quoteId: String,
-    private val quoteRepository: QuoteRepository,
-    private val invoiceRepository: InvoiceRepository,
-    private val lineItemRepository: LineItemRepository,
-    private val businessRepository: BusinessRepository
+    private val workflowRepository: com.servicesphere.data.repository.WorkflowRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(QuoteConversionUiState())
     val uiState: StateFlow<QuoteConversionUiState> = _uiState
@@ -160,51 +157,11 @@ class ConvertQuoteToInvoiceViewModel(
     fun convertQuoteToInvoice() {
         viewModelScope.launch {
             _uiState.update { it.copy(isConverting = true, errorMessage = null, convertedInvoiceId = null) }
-            runCatching {
-                val quote = quoteRepository.getQuoteByIdOnce(quoteId) ?: error("Quote not found")
-                val quoteItems = lineItemRepository.observeLineItems(quoteId, LineItemParentType.QUOTE).first()
-                if (quoteItems.isEmpty()) error("Add at least one line item before converting this quote")
-                val profile = ensureBusinessProfile()
-                val now = System.currentTimeMillis()
-                val invoiceId = UUID.randomUUID().toString()
-                val dueDate = LocalDate.now().plusDays(14).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                val invoice = InvoiceEntity(
-                    id = invoiceId,
-                    clientId = quote.clientId,
-                    jobId = quote.jobId,
-                    quoteId = quote.id,
-                    invoiceNumber = nextInvoiceNumber(profile),
-                    status = InvoiceStatus.DRAFT,
-                    issueDate = now,
-                    dueDate = dueDate,
-                    subtotal = quote.subtotal,
-                    discountAmount = quote.discountAmount,
-                    taxAmount = quote.taxAmount,
-                    total = quote.total,
-                    notes = quote.notes,
-                    createdAt = now,
-                    updatedAt = now
-                )
-                invoiceRepository.insertInvoice(invoice)
-                lineItemRepository.insertLineItems(quoteItems.map {
-                    LineItemEntity(
-                        id = UUID.randomUUID().toString(),
-                        parentId = invoiceId,
-                        parentType = LineItemParentType.INVOICE,
-                        description = it.description,
-                        quantity = it.quantity,
-                        unitPrice = it.unitPrice,
-                        total = it.total,
-                        sortOrder = it.sortOrder
-                    )
-                })
-                businessRepository.updateBusinessProfile(profile.copy(nextInvoiceNumber = profile.nextInvoiceNumber + 1, updatedAt = now))
-                quoteRepository.updateQuote(quote.copy(status = QuoteStatus.CONVERTED_TO_INVOICE, updatedAt = now))
-                invoiceId
-            }.onSuccess { invoiceId ->
-                _uiState.update { it.copy(isConverting = false, convertedInvoiceId = invoiceId) }
-            }.onFailure { error ->
-                _uiState.update { it.copy(isConverting = false, errorMessage = error.message ?: "Unable to convert quote") }
+            when (val result = workflowRepository.createInvoiceFromQuote(quoteId)) {
+                is com.servicesphere.data.repository.ConversionResult.Created -> _uiState.update { it.copy(isConverting = false, convertedInvoiceId = result.value.id) }
+                is com.servicesphere.data.repository.ConversionResult.Existing -> _uiState.update { it.copy(isConverting = false, convertedInvoiceId = result.value.id) }
+                com.servicesphere.data.repository.ConversionResult.SourceNotFound -> _uiState.update { it.copy(isConverting = false, errorMessage = "Quote not found") }
+                is com.servicesphere.data.repository.ConversionResult.Failure -> _uiState.update { it.copy(isConverting = false, errorMessage = result.message) }
             }
         }
     }
@@ -212,29 +169,13 @@ class ConvertQuoteToInvoiceViewModel(
     fun clearConvertedInvoice() = _uiState.update { it.copy(convertedInvoiceId = null) }
     fun clearError() = _uiState.update { it.copy(errorMessage = null) }
 
-    private suspend fun ensureBusinessProfile(): BusinessProfileEntity {
-        val existing = businessRepository.getBusinessProfileOnce()
-        if (existing != null) return existing
-        val fallback = BusinessProfileEntity(businessName = "ServiceSphere Business")
-        businessRepository.upsertBusinessProfile(fallback)
-        return fallback
-    }
-
-    private fun nextInvoiceNumber(profile: BusinessProfileEntity): String {
-        val prefix = profile.invoicePrefix.ifBlank { "INV-" }
-        return "$prefix${profile.nextInvoiceNumber.toString().padStart(4, '0')}"
-    }
-
     class Factory(
         private val quoteId: String,
-        private val quoteRepository: QuoteRepository,
-        private val invoiceRepository: InvoiceRepository,
-        private val lineItemRepository: LineItemRepository,
-        private val businessRepository: BusinessRepository
+        private val workflowRepository: com.servicesphere.data.repository.WorkflowRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            ConvertQuoteToInvoiceViewModel(quoteId, quoteRepository, invoiceRepository, lineItemRepository, businessRepository) as T
+            ConvertQuoteToInvoiceViewModel(quoteId, workflowRepository) as T
     }
 }
 

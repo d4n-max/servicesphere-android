@@ -6,9 +6,16 @@ import androidx.lifecycle.viewModelScope
 import com.servicesphere.data.repository.ClientRepository
 import com.servicesphere.data.repository.JobReminderRepository
 import com.servicesphere.data.repository.JobRepository
+import com.servicesphere.data.repository.InvoiceRepository
+import com.servicesphere.data.repository.QuoteRepository
+import com.servicesphere.data.repository.WorkflowRepository
+import com.servicesphere.data.repository.ConversionResult
+import com.servicesphere.analytics.AnalyticsTracker
 import com.servicesphere.domain.model.JobStatus
 import com.servicesphere.reminders.JobReminderScheduler
 import com.servicesphere.reminders.ReminderTypes
+import com.servicesphere.ui.timeline.ActivityTimelineItem
+import com.servicesphere.ui.timeline.buildTimeline
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -25,6 +32,11 @@ data class JobDetailUiState(
     val isLoading: Boolean = true,
     val job: JobUiModel? = null,
     val reminder: JobReminderUiModel? = null,
+    val sourceQuoteId: String? = null,
+    val linkedInvoiceId: String? = null,
+    val timeline: List<ActivityTimelineItem> = emptyList(),
+    val isConverting: Boolean = false,
+    val convertedInvoiceId: String? = null,
     val errorMessage: String? = null,
     val deleteSuccess: Boolean = false
 )
@@ -34,20 +46,35 @@ class JobDetailViewModel(
     private val jobRepository: JobRepository,
     clientRepository: ClientRepository,
     private val reminderRepository: JobReminderRepository,
-    private val reminderScheduler: JobReminderScheduler
+    private val reminderScheduler: JobReminderScheduler,
+    private val workflowRepository: WorkflowRepository,
+    quoteRepository: QuoteRepository,
+    invoiceRepository: InvoiceRepository,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
     private val errorMessage = MutableStateFlow<String?>(null)
     private val deleteSuccess = MutableStateFlow(false)
+    private val isConverting = MutableStateFlow(false)
+    private val convertedInvoiceId = MutableStateFlow<String?>(null)
     private val _statusUpdateEvents = MutableSharedFlow<String>()
     val statusUpdateEvents: SharedFlow<String> = _statusUpdateEvents.asSharedFlow()
 
-    val uiState: StateFlow<JobDetailUiState> = combine(
+    private val detailRows = combine(
         jobRepository.observeJobById(jobId),
         clientRepository.observeClients(),
         reminderRepository.observeRemindersForJob(jobId),
+        quoteRepository.observeQuotes(),
+        invoiceRepository.observeInvoices()
+    ) { job, clients, reminders, quotes, invoices -> DetailRows(job, clients, reminders, quotes, invoices) }
+
+    val uiState: StateFlow<JobDetailUiState> = combine(
+        detailRows,
         errorMessage,
-        deleteSuccess
-    ) { job, clients, reminders, error, deleted ->
+        deleteSuccess,
+        isConverting,
+        convertedInvoiceId
+    ) { rows, error, deleted, converting, invoiceId ->
+        val (job, clients, reminders, quotes, invoices) = rows
         JobDetailUiState(
             isLoading = false,
             job = job?.toUiModel(clients.firstOrNull { it.id == job.clientId }),
@@ -60,6 +87,11 @@ class JobDetailViewModel(
                     hasFired = it.hasFired
                 )
             },
+            sourceQuoteId = job?.sourceQuoteId,
+            linkedInvoiceId = invoices.firstOrNull { it.jobId == jobId }?.id,
+            timeline = job?.let { buildTimeline(quotes.filter { quote -> quote.id == it.sourceQuoteId || quote.jobId == it.id }, listOf(it), invoices.filter { invoice -> invoice.jobId == it.id }) }.orEmpty(),
+            isConverting = converting,
+            convertedInvoiceId = invoiceId,
             errorMessage = error,
             deleteSuccess = deleted
         )
@@ -98,6 +130,22 @@ class JobDetailViewModel(
     }
 
     fun clearError() = errorMessage.update { null }
+    fun clearConvertedInvoice() { convertedInvoiceId.value = null }
+
+    fun createInvoice() {
+        if (isConverting.value) return
+        viewModelScope.launch {
+            isConverting.value = true
+            analyticsTracker.workflowConversion(AnalyticsTracker.Events.JOB_TO_INVOICE_STARTED, "job_detail")
+            when (val result = workflowRepository.createInvoiceFromJob(jobId)) {
+                is ConversionResult.Created -> { analyticsTracker.workflowConversion(AnalyticsTracker.Events.JOB_TO_INVOICE_COMPLETED, "job_detail", "created"); convertedInvoiceId.value = result.value.id }
+                is ConversionResult.Existing -> { analyticsTracker.workflowConversion(AnalyticsTracker.Events.JOB_TO_INVOICE_COMPLETED, "job_detail", "existing"); convertedInvoiceId.value = result.value.id }
+                ConversionResult.SourceNotFound -> { analyticsTracker.workflowConversion(AnalyticsTracker.Events.JOB_TO_INVOICE_FAILED, "job_detail", "not_found"); errorMessage.value = "Job not found" }
+                is ConversionResult.Failure -> { analyticsTracker.workflowConversion(AnalyticsTracker.Events.JOB_TO_INVOICE_FAILED, "job_detail", "failure"); errorMessage.value = result.message }
+            }
+            isConverting.value = false
+        }
+    }
 
     fun disableReminder() {
         viewModelScope.launch {
@@ -117,13 +165,25 @@ class JobDetailViewModel(
         private val jobRepository: JobRepository,
         private val clientRepository: ClientRepository,
         private val reminderRepository: JobReminderRepository,
-        private val reminderScheduler: JobReminderScheduler
+        private val reminderScheduler: JobReminderScheduler,
+        private val workflowRepository: WorkflowRepository,
+        private val quoteRepository: QuoteRepository,
+        private val invoiceRepository: InvoiceRepository,
+        private val analyticsTracker: AnalyticsTracker
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            JobDetailViewModel(jobId, jobRepository, clientRepository, reminderRepository, reminderScheduler) as T
+            JobDetailViewModel(jobId, jobRepository, clientRepository, reminderRepository, reminderScheduler, workflowRepository, quoteRepository, invoiceRepository, analyticsTracker) as T
     }
 }
+
+private data class DetailRows(
+    val job: com.servicesphere.data.local.JobEntity?,
+    val clients: List<com.servicesphere.data.local.ClientEntity>,
+    val reminders: List<com.servicesphere.data.local.JobReminderEntity>,
+    val quotes: List<com.servicesphere.data.local.QuoteEntity>,
+    val invoices: List<com.servicesphere.data.local.InvoiceEntity>
+)
 
 data class JobReminderUiModel(
     val id: String,

@@ -54,6 +54,10 @@ class AnalyticsTracker private constructor(
         logEvent(Events.SETTINGS_OPENED, Params.SCREEN to Screens.SETTINGS, Params.SOURCE to source)
     }
 
+    fun workflowConversion(event: String, sourceScreen: String, result: String? = null) {
+        logEvent(event, Params.SOURCE to sourceScreen, Params.RESULT to result)
+    }
+
     fun screenView(screen: String, source: String? = null) {
         val bundle = Bundle().apply {
             putString(FirebaseAnalytics.Param.SCREEN_NAME, screen)
@@ -97,6 +101,12 @@ class AnalyticsTracker private constructor(
         const val PURCHASE_SUCCESS = "purchase_success"
         const val PURCHASE_FAILED = "purchase_failed"
         const val SETTINGS_OPENED = "settings_opened"
+        const val QUOTE_TO_JOB_STARTED = "quote_to_job_started"
+        const val QUOTE_TO_JOB_COMPLETED = "quote_to_job_completed"
+        const val QUOTE_TO_JOB_FAILED = "quote_to_job_failed"
+        const val JOB_TO_INVOICE_STARTED = "job_to_invoice_started"
+        const val JOB_TO_INVOICE_COMPLETED = "job_to_invoice_completed"
+        const val JOB_TO_INVOICE_FAILED = "job_to_invoice_failed"
     }
 
     object Params {
