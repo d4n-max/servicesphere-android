@@ -1,292 +1,63 @@
 package com.servicesphere.ui.screens.dashboard
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.HomeRepairService
-import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.servicesphere.data.ServiceLocator
+import com.servicesphere.domain.model.JobStatus
+import com.servicesphere.domain.today.TodayJobItem
 import com.servicesphere.ui.components.EmptyState
-import com.servicesphere.ui.components.InvoiceCard
-import com.servicesphere.ui.components.JobCard
-import com.servicesphere.ui.components.QuickActionButton
 import com.servicesphere.ui.components.SectionHeader
+import com.servicesphere.ui.components.ServiceSphereButton
 import com.servicesphere.ui.components.ServiceSphereCard
 import com.servicesphere.ui.components.ServiceSphereOutlinedButton
-import com.servicesphere.ui.components.ServiceSphereMetricCard
 import com.servicesphere.ui.components.StatusChip
 import com.servicesphere.ui.components.StatusTone
-import com.servicesphere.ui.components.SummaryMetricCard
-import com.servicesphere.ui.theme.ServiceSphereDanger
-import com.servicesphere.ui.theme.ServiceSpherePrimary
-import com.servicesphere.ui.theme.ServiceSphereTextSecondary
+import java.text.DateFormat
+import java.util.Date
 
 @Composable
-fun DashboardScreen(
-    onNewJob: () -> Unit,
-    onNewClient: () -> Unit,
-    onNewQuote: () -> Unit,
-    onNewInvoice: () -> Unit,
-    onViewCalendar: () -> Unit,
-    viewModel: DashboardViewModel = viewModel(
-        factory = DashboardViewModel.Factory(
-            businessRepository = ServiceLocator.businessRepository,
-            clientRepository = ServiceLocator.clientRepository,
-            jobRepository = ServiceLocator.jobRepository,
-            quoteRepository = ServiceLocator.quoteRepository,
-            invoiceRepository = ServiceLocator.invoiceRepository
-        )
-    )
-) {
-    val uiState by viewModel.uiState.collectAsState()
-
-    when {
-        uiState.isLoading -> DashboardLoading()
-        else -> DashboardContent(
-            uiState = uiState,
-            onNewJob = onNewJob,
-            onNewClient = onNewClient,
-            onNewQuote = onNewQuote,
-            onNewInvoice = onNewInvoice,
-            onViewCalendar = onViewCalendar
-        )
+fun DashboardScreen(onNewJob: () -> Unit, onNewClient: () -> Unit, onNewQuote: () -> Unit, onNewInvoice: () -> Unit, onViewCalendar: () -> Unit, onOpenJob: (String) -> Unit, onOpenInvoice: (String) -> Unit, onOpenQuote: (String) -> Unit, viewModel: DashboardViewModel = viewModel(factory = DashboardViewModel.Factory(ServiceLocator.clientRepository, ServiceLocator.jobRepository, ServiceLocator.quoteRepository, ServiceLocator.invoiceRepository, ServiceLocator.jobReminderRepository))) {
+    val state by viewModel.uiState.collectAsState()
+    if (state.isLoading) { Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) { CircularProgressIndicator() }; return }
+    val cockpit = state.cockpit ?: return
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        item { Column { Text("Today", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold); Text(DateFormat.getDateInstance(DateFormat.FULL).format(Date()), color = MaterialTheme.colorScheme.onSurfaceVariant); Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { StatusChip("${cockpit.activeJobs.size} jobs", StatusTone.Info); StatusChip("${cockpit.overdueInvoices.size} overdue", if (cockpit.overdueInvoices.isEmpty()) StatusTone.Success else StatusTone.Danger); StatusChip("${cockpit.quoteFollowUps.size} follow-ups", StatusTone.Warning) } } }
+        state.errorMessage?.let { message -> item { ServiceSphereCard { Text(message) } } }
+        cockpit.nextJob?.let { job -> item { NextJobCard(job, onOpenJob) } }
+        item { SectionHeader("Today's schedule", "Calendar", onViewCalendar) }
+        if (cockpit.activeJobs.isEmpty()) item { EmptyState(title = "No jobs scheduled today.", message = "Create a job when new work comes in.", actionLabel = "Create job", onAction = onNewJob) }
+        else items(cockpit.activeJobs) { job -> TodayJobCard(job, onOpenJob) }
+        if (cockpit.overdueInvoices.isNotEmpty()) { item { SectionHeader("Money requiring attention") }; items(cockpit.overdueInvoices) { invoice -> ServiceSphereCard(onClick = { onOpenInvoice(invoice.id) }) { Text("${invoice.invoiceNumber} • ${invoice.clientName ?: "No client"}", fontWeight = FontWeight.SemiBold); Text("Overdue — ${invoice.total}") } } }
+        if (cockpit.quoteFollowUps.isNotEmpty()) { item { SectionHeader("Quotes requiring follow-up") }; items(cockpit.quoteFollowUps) { quote -> ServiceSphereCard(onClick = { onOpenQuote(quote.id) }) { Text("${quote.quoteNumber} • ${quote.clientName ?: "No client"}", fontWeight = FontWeight.SemiBold); Text(quote.reason) } } }
+        if (cockpit.dueReminders.isNotEmpty()) { item { SectionHeader("Due reminders") }; items(cockpit.dueReminders) { reminder -> ServiceSphereCard(onClick = { onOpenJob(reminder.jobId) }) { Text("Job reminder due", fontWeight = FontWeight.SemiBold) } } }
+        if (cockpit.completedJobs.isNotEmpty()) { item { SectionHeader("Completed today") }; items(cockpit.completedJobs) { job -> TodayJobCard(job, onOpenJob) } }
+        if (cockpit.isCaughtUp) item { ServiceSphereCard { Text("You're caught up for today.", fontWeight = FontWeight.SemiBold) } }
     }
 }
 
-@Composable
-private fun DashboardLoading() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        CircularProgressIndicator()
-        Spacer(Modifier.height(14.dp))
-        Text("Loading your workspace", color = ServiceSphereTextSecondary)
-    }
+@Composable private fun NextJobCard(job: TodayJobItem, onOpenJob: (String) -> Unit) {
+    val context = LocalContext.current
+    ServiceSphereCard { Column(verticalArrangement = Arrangement.spacedBy(10.dp)) { Text("Next job", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold); Text(job.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text(listOfNotNull(job.clientName, job.address, job.scheduledAt?.let { DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(it)) }).joinToString(" • ")); if (!job.notes.isNullOrBlank()) Text(job.notes, maxLines = 2); Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { ServiceSphereButton(if (job.status == JobStatus.IN_PROGRESS) "Continue job" else "Start job", Modifier.weight(1f)) { onOpenJob(job.id) }; if (!job.address.isNullOrBlank()) ServiceSphereOutlinedButton("Directions", Modifier.weight(1f)) { val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=${Uri.encode(job.address)}")); runCatching { context.startActivity(intent) }.onFailure { Toast.makeText(context, "No maps app available for directions.", Toast.LENGTH_SHORT).show() } } } } }
 }
-
-@Composable
-private fun DashboardContent(
-    uiState: DashboardUiState,
-    onNewJob: () -> Unit,
-    onNewClient: () -> Unit,
-    onNewQuote: () -> Unit,
-    onNewInvoice: () -> Unit,
-    onViewCalendar: () -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            DashboardHeader(businessName = uiState.businessName)
-        }
-
-        uiState.errorMessage?.let { message ->
-            item {
-                ServiceSphereCard {
-                    Text(message, color = ServiceSphereDanger, style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-        }
-
-        item {
-            QuickActions(
-                onNewJob = onNewJob,
-                onNewClient = onNewClient,
-                onNewQuote = onNewQuote,
-                onNewInvoice = onNewInvoice
-            )
-        }
-
-        if (uiState.totalClients == 0 && uiState.totalJobs == 0 && uiState.recentInvoices.isEmpty()) {
-            item {
-                DashboardHintCard("Use quick actions to create your first job, client, quote, or invoice.")
-            }
-            item {
-                FirstWorkspaceActionCard(
-                    onNewClient = onNewClient,
-                    onNewJob = onNewJob,
-                    onNewQuote = onNewQuote
-                )
-            }
-        }
-
-        item {
-            ServiceSphereMetricCard(
-                label = "Monthly Revenue",
-                value = uiState.formattedRevenue,
-                icon = Icons.Filled.Payments,
-                badge = "This Month",
-                tone = StatusTone.Primary
-            )
-        }
-
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                SummaryMetricCard("Today's Jobs", uiState.todayJobsCount.toString(), Modifier.weight(1f))
-                SummaryMetricCard("Unpaid", uiState.unpaidInvoicesCount.toString(), Modifier.weight(1f))
-            }
-        }
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                SummaryMetricCard("Draft Quotes", uiState.draftQuotesCount.toString(), Modifier.weight(1f))
-                SummaryMetricCard("Overdue", uiState.overdueInvoicesCount.toString(), Modifier.weight(1f))
-            }
-        }
-
-        item {
-            ServiceSphereCard {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Workspace", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                        StatusChip("Clients ${uiState.totalClients}", StatusTone.Info)
-                        StatusChip("Jobs ${uiState.totalJobs}", StatusTone.Neutral)
-                        StatusChip("Overdue ${uiState.overdueInvoicesCount}", if (uiState.overdueInvoicesCount > 0) StatusTone.Danger else StatusTone.Success)
-                    }
-                }
-            }
-        }
-
-        item { SectionHeader("Today's Jobs", "View Calendar", onViewCalendar) }
-        if (uiState.recentJobs.isEmpty()) {
-            item {
-                EmptyState(
-                    title = "Your jobs will show up here",
-                    message = "Create your first job to keep the client, address, notes, quote, and invoice in one place.",
-                    icon = Icons.Filled.HomeRepairService,
-                    actionLabel = "Create first job",
-                    onAction = onNewJob
-                )
-            }
-        } else {
-            items(uiState.recentJobs) { job ->
-                JobCard(
-                    title = job.title,
-                    client = job.clientName ?: "No client linked",
-                    status = job.status,
-                    schedule = job.scheduledDate,
-                    price = job.estimatedPrice,
-                    tone = toneForJob(job.status)
-                )
-            }
-        }
-
-        item { SectionHeader("Recent Invoices") }
-        if (uiState.recentInvoices.isEmpty()) {
-            item {
-                EmptyState(
-                    title = "No invoices yet",
-                    message = "When a job is ready to bill, turn the job details into an invoice.",
-                    icon = Icons.AutoMirrored.Filled.ReceiptLong,
-                    actionLabel = "Create invoice",
-                    onAction = onNewInvoice
-                )
-            }
-        } else {
-            items(uiState.recentInvoices) { invoice ->
-                InvoiceCard(
-                    number = invoice.invoiceNumber,
-                    client = invoice.clientName ?: "No client linked",
-                    status = invoice.status,
-                    dueDate = invoice.dueDate,
-                    total = invoice.total,
-                    tone = toneForInvoice(invoice.status)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DashboardHintCard(message: String) {
-    ServiceSphereCard(accentColor = ServiceSpherePrimary) {
-        Text(message, color = ServiceSphereTextSecondary, style = MaterialTheme.typography.bodyLarge)
-    }
-}
-
-@Composable
-private fun DashboardHeader(businessName: String?) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text("Welcome back", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text(
-            businessName ?: "ServiceSphere workspace",
-            style = MaterialTheme.typography.bodyLarge,
-            color = ServiceSphereTextSecondary
-        )
-    }
-}
-
-@Composable
-private fun FirstWorkspaceActionCard(
-    onNewClient: () -> Unit,
-    onNewJob: () -> Unit,
-    onNewQuote: () -> Unit
-) {
-    ServiceSphereCard {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Set up your first workflow", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Text(
-                "Start with a client, then add jobs and quotes as your work comes in.",
-                color = ServiceSphereTextSecondary
-            )
-            ServiceSphereOutlinedButton("Create your first client", modifier = Modifier.fillMaxWidth(), onClick = onNewClient)
-            ServiceSphereOutlinedButton("Create your first job", modifier = Modifier.fillMaxWidth(), onClick = onNewJob)
-            ServiceSphereOutlinedButton("Create your first quote", modifier = Modifier.fillMaxWidth(), onClick = onNewQuote)
-        }
-    }
-}
-
-@Composable
-private fun QuickActions(
-    onNewJob: () -> Unit,
-    onNewClient: () -> Unit,
-    onNewQuote: () -> Unit,
-    onNewInvoice: () -> Unit
-) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        QuickActionButton("New Job", Icons.Filled.HomeRepairService, primary = true, onClick = onNewJob)
-        QuickActionButton("Client", Icons.Filled.Groups, onClick = onNewClient)
-        QuickActionButton("Quote", Icons.Filled.Description, onClick = onNewQuote)
-        QuickActionButton("Invoice", Icons.AutoMirrored.Filled.ReceiptLong, onClick = onNewInvoice)
-    }
-}
-
-private fun toneForJob(status: String): StatusTone = when (status) {
-    "Completed", "Paid" -> StatusTone.Success
-    "In Progress", "Scheduled" -> StatusTone.Info
-    "Invoiced" -> StatusTone.Warning
-    "Cancelled" -> StatusTone.Danger
-    else -> StatusTone.Neutral
-}
-
-private fun toneForInvoice(status: String): StatusTone = when (status) {
-    "Paid" -> StatusTone.Success
-    "Overdue", "Cancelled" -> StatusTone.Danger
-    "Unpaid", "Sent" -> StatusTone.Warning
-    else -> StatusTone.Neutral
-}
+@Composable private fun TodayJobCard(job: TodayJobItem, onOpenJob: (String) -> Unit) = ServiceSphereCard(onClick = { onOpenJob(job.id) }) { Column { Text(job.title, fontWeight = FontWeight.SemiBold); Text(listOfNotNull(job.clientName, job.scheduledAt?.let { DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(it)) }, job.status.replace('_', ' ')).joinToString(" • ")) } }

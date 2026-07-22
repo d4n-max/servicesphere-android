@@ -107,6 +107,11 @@ class AnalyticsTracker private constructor(
         const val JOB_TO_INVOICE_STARTED = "job_to_invoice_started"
         const val JOB_TO_INVOICE_COMPLETED = "job_to_invoice_completed"
         const val JOB_TO_INVOICE_FAILED = "job_to_invoice_failed"
+        const val TODAY_VIEWED = "today_viewed"
+        const val TODAY_NEXT_JOB_OPENED = "today_next_job_opened"
+        const val TODAY_DIRECTIONS_OPENED = "today_directions_opened"
+        const val TODAY_INVOICE_FOLLOWUP_STARTED = "today_invoice_followup_started"
+        const val TODAY_QUOTE_FOLLOWUP_STARTED = "today_quote_followup_started"
     }
 
     object Params {

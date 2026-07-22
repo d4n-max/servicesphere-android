@@ -240,7 +240,10 @@ fun ServiceSphereApp(initialJobId: String? = null) {
                         onNewClient = { runGated(ServiceLocator.featureGateManager::canCreateClient) { navController.navigate(Route.CreateClient.path) } },
                         onNewQuote = { runGated(ServiceLocator.featureGateManager::canCreateQuote) { navController.navigate(createQuoteRoute()) } },
                         onNewInvoice = { runGated(ServiceLocator.featureGateManager::canCreateInvoice) { navController.navigate(createInvoiceRoute()) } },
-                        onViewCalendar = { navController.navigate(Route.Calendar.path) }
+                        onViewCalendar = { navController.navigate(Route.Calendar.path) },
+                        onOpenJob = { navController.navigate(jobDetailRoute(it)) },
+                        onOpenInvoice = { navController.navigate(invoiceDetailRoute(it)) },
+                        onOpenQuote = { navController.navigate(quoteDetailRoute(it)) }
                     )
                 }
                 composable(Route.Jobs.path) {
@@ -835,7 +838,7 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
 }
 
 private fun topBarTitle(route: String?): String = when (route) {
-    Route.Dashboard.path -> "Dashboard"
+    Route.Dashboard.path -> "Today"
     Route.CreateFirstJob.path -> "Create First Job"
     Route.BusinessSetup.path -> "Setup"
     Route.Walkthrough.path -> "Walkthrough"
