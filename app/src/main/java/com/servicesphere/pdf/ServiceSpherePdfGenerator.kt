@@ -43,40 +43,42 @@ class ServiceSpherePdfGenerator(
 ) {
     suspend fun generateQuotePdf(context: Context, quoteId: String, includeBusinessLogo: Boolean = false, showFreeWatermark: Boolean = true): PdfResult = withContext(Dispatchers.IO) {
         runCatching {
-            val quote = quoteRepository.getQuoteByIdOnce(quoteId) ?: error("Quote not found")
+            val quote = quoteRepository.getQuoteByIdOnce(quoteId) ?: throw IllegalStateException("This quote no longer exists.")
             val profile = businessRepository.getBusinessProfileOnce()
             val client = quote.clientId?.let { clientRepository.getClientByIdOnce(it) }
             val job = quote.jobId?.let { jobRepository.getJobByIdOnce(it) }
             val items = lineItemRepository.observeLineItems(quote.id, LineItemParentType.QUOTE).first()
+            require(items.isNotEmpty()) { "Add at least one line item before generating this quote." }
             val signature = quote.jobId?.let { signatureRepository.observeSignaturesForJob(it).first().firstOrNull() }
             val data = quote.toPdfData(profile, client, job, items, signature, includeBusinessLogo, showFreeWatermark)
-            writePdf(context, "quote", data.quoteNumber) { renderer -> renderer.renderQuote(data) }
+            writePdf(context, data.businessInfo.businessName, "Quote", data.quoteNumber) { renderer -> renderer.renderQuote(data) }
         }.getOrElse { error -> PdfResult(false, errorMessage = error.message ?: "Couldn't generate quote PDF") }
     }
 
     suspend fun generateInvoicePdf(context: Context, invoiceId: String, includeBusinessLogo: Boolean = false, showFreeWatermark: Boolean = true): PdfResult = withContext(Dispatchers.IO) {
         runCatching {
-            val invoice = invoiceRepository.getInvoiceByIdOnce(invoiceId) ?: error("Invoice not found")
+            val invoice = invoiceRepository.getInvoiceByIdOnce(invoiceId) ?: throw IllegalStateException("This invoice no longer exists.")
             val profile = businessRepository.getBusinessProfileOnce()
             val client = invoice.clientId?.let { clientRepository.getClientByIdOnce(it) }
             val job = invoice.jobId?.let { jobRepository.getJobByIdOnce(it) }
             val quote = invoice.quoteId?.let { quoteRepository.getQuoteByIdOnce(it) }
             val items = lineItemRepository.observeLineItems(invoice.id, LineItemParentType.INVOICE).first()
+            require(items.isNotEmpty()) { "Add at least one line item before generating this invoice." }
             val invoiceSignature = signatureRepository.observeSignaturesForInvoice(invoice.id).first().firstOrNull()
             val jobSignature = invoice.jobId?.let { signatureRepository.observeSignaturesForJob(it).first().firstOrNull() }
             val data = invoice.toPdfData(profile, client, job, quote, items, invoiceSignature ?: jobSignature, includeBusinessLogo, showFreeWatermark)
-            writePdf(context, "invoice", data.invoiceNumber) { renderer -> renderer.renderInvoice(data) }
+            writePdf(context, data.businessInfo.businessName, "Invoice", data.invoiceNumber) { renderer -> renderer.renderInvoice(data) }
         }.getOrElse { error -> PdfResult(false, errorMessage = error.message ?: "Couldn't generate invoice PDF") }
     }
 
-    private fun writePdf(context: Context, prefix: String, number: String, render: (PdfRenderer) -> Unit): PdfResult {
+    private fun writePdf(context: Context, businessName: String, type: String, number: String, render: (PdfRenderer) -> Unit): PdfResult {
         val directory = File(context.filesDir, "pdfs").apply { mkdirs() }
-        val baseName = "${prefix}_${sanitizeFilePart(number)}_${SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())}"
-        var file = File(directory, "$baseName.pdf")
-        if (file.exists()) file = File(directory, "${baseName}_${System.currentTimeMillis()}.pdf")
+        val baseName = "${sanitizeFilePart(businessName)}-${sanitizeFilePart(type)}-${sanitizeFilePart(number)}"
+        val file = File(directory, "$baseName.pdf")
         val document = PdfDocument()
         try {
-            render(PdfRenderer(document, context))
+            val renderer = PdfRenderer(document, context)
+            render(renderer)
             file.outputStream().use { document.writeTo(it) }
             return PdfResult(success = true, filePath = file.absolutePath, fileName = file.name)
         } finally {

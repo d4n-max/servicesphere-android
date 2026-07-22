@@ -33,3 +33,25 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_jobs_sourceQuoteId ON jobs(sourceQuoteId)")
     }
 }
+
+/** Adds durable document lifecycle metadata without altering existing records. */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE quotes ADD COLUMN sentAt INTEGER")
+        db.execSQL("ALTER TABLE quotes ADD COLUMN acceptedAt INTEGER")
+        db.execSQL("ALTER TABLE quotes ADD COLUMN declinedAt INTEGER")
+        db.execSQL("ALTER TABLE quotes ADD COLUMN convertedInvoiceId TEXT")
+        db.execSQL("ALTER TABLE quotes ADD COLUMN pdfPath TEXT")
+        db.execSQL("ALTER TABLE quotes ADD COLUMN pdfGeneratedAt INTEGER")
+        db.execSQL("ALTER TABLE quotes ADD COLUMN pdfSourceUpdatedAt INTEGER")
+        db.execSQL("ALTER TABLE invoices ADD COLUMN sentAt INTEGER")
+        db.execSQL("ALTER TABLE invoices ADD COLUMN voidedAt INTEGER")
+        db.execSQL("ALTER TABLE invoices ADD COLUMN pdfPath TEXT")
+        db.execSQL("ALTER TABLE invoices ADD COLUMN pdfGeneratedAt INTEGER")
+        db.execSQL("ALTER TABLE invoices ADD COLUMN pdfSourceUpdatedAt INTEGER")
+        db.execSQL("CREATE TABLE IF NOT EXISTS document_activity (id TEXT NOT NULL PRIMARY KEY, documentId TEXT NOT NULL, documentType TEXT NOT NULL, eventType TEXT NOT NULL, detail TEXT, relatedDocumentId TEXT, createdAt INTEGER NOT NULL)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_document_activity_documentId ON document_activity(documentId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_document_activity_documentType ON document_activity(documentType)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_document_activity_createdAt ON document_activity(createdAt)")
+    }
+}

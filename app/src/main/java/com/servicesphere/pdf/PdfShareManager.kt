@@ -7,19 +7,23 @@ import androidx.core.content.FileProvider
 import java.io.File
 
 class PdfShareManager(private val context: Context) {
-    fun sharePdf(filePath: String, chooserTitle: String): String? = runCatching {
+    fun sharePdf(filePath: String, chooserTitle: String, subject: String? = null, message: String? = null): String? = runCatching {
         val file = File(filePath)
         if (!file.exists()) error("PDF file not found")
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "application/pdf"
             putExtra(Intent.EXTRA_STREAM, uri)
+            subject?.let { putExtra(Intent.EXTRA_SUBJECT, it) }
+            message?.let { putExtra(Intent.EXTRA_TEXT, it) }
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        context.startActivity(Intent.createChooser(intent, chooserTitle).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        val chooser = Intent.createChooser(intent, chooserTitle).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (intent.resolveActivity(context.packageManager) == null) throw ActivityNotFoundException()
+        context.startActivity(chooser)
         null
-    }.getOrElse { error -> error.message ?: "No app can share this PDF" }
+    }.getOrElse { error -> if (error is ActivityNotFoundException) "No compatible app is available to share this PDF." else error.message ?: "No compatible app is available to share this PDF." }
 
     fun openPdf(filePath: String): String? = runCatching {
         val file = File(filePath)

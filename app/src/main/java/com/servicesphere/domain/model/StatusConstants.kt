@@ -15,6 +15,8 @@ object QuoteStatus {
     const val SENT = "SENT"
     const val ACCEPTED = "ACCEPTED"
     const val REJECTED = "REJECTED"
+    const val DECLINED = REJECTED
+    const val EXPIRED = "EXPIRED"
     const val CONVERTED_TO_INVOICE = "CONVERTED_TO_INVOICE"
 }
 
@@ -25,6 +27,7 @@ object InvoiceStatus {
     const val PAID = "PAID"
     const val OVERDUE = "OVERDUE"
     const val CANCELLED = "CANCELLED"
+    const val VOID = CANCELLED
 }
 
 object PaymentMethod {

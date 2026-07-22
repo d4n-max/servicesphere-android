@@ -111,6 +111,13 @@ data class QuoteEntity(
     val taxAmount: Double = 0.0,
     val total: Double = 0.0,
     val notes: String? = null,
+    val sentAt: Long? = null,
+    val acceptedAt: Long? = null,
+    val declinedAt: Long? = null,
+    val convertedInvoiceId: String? = null,
+    val pdfPath: String? = null,
+    val pdfGeneratedAt: Long? = null,
+    val pdfSourceUpdatedAt: Long? = null,
     val createdAt: Long = nowMillis(),
     val updatedAt: Long = nowMillis()
 )
@@ -141,8 +148,27 @@ data class InvoiceEntity(
     val taxAmount: Double = 0.0,
     val total: Double = 0.0,
     val notes: String? = null,
+    val sentAt: Long? = null,
+    val voidedAt: Long? = null,
+    val pdfPath: String? = null,
+    val pdfGeneratedAt: Long? = null,
+    val pdfSourceUpdatedAt: Long? = null,
     val createdAt: Long = nowMillis(),
     val updatedAt: Long = nowMillis()
+)
+
+@Entity(
+    tableName = "document_activity",
+    indices = [Index("documentId"), Index("documentType"), Index("createdAt")]
+)
+data class DocumentActivityEntity(
+    @PrimaryKey val id: String = uuid(),
+    val documentId: String,
+    val documentType: String,
+    val eventType: String,
+    val detail: String? = null,
+    val relatedDocumentId: String? = null,
+    val createdAt: Long = nowMillis()
 )
 
 @Entity(

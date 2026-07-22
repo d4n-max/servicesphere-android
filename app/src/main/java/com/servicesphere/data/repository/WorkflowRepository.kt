@@ -5,7 +5,9 @@ import com.servicesphere.data.local.AppDatabase
 import com.servicesphere.data.local.InvoiceEntity
 import com.servicesphere.data.local.JobEntity
 import com.servicesphere.data.local.LineItemEntity
+import com.servicesphere.data.local.DocumentActivityEntity
 import com.servicesphere.domain.model.InvoiceStatus
+import com.servicesphere.domain.model.QuoteStatus
 import com.servicesphere.domain.model.LineItemParentType
 import java.util.UUID
 import kotlinx.coroutines.flow.first
@@ -87,6 +89,7 @@ class WorkflowRepository(private val database: AppDatabase) {
         database.withTransaction {
             database.invoiceDao().getInvoiceBySourceQuoteIdOnce(quoteId)?.let { return@withTransaction ConversionResult.Existing(it) }
             val quote = database.quoteDao().getQuoteByIdOnce(quoteId) ?: return@withTransaction ConversionResult.SourceNotFound
+            if (quote.status != QuoteStatus.ACCEPTED) return@withTransaction ConversionResult.Failure("Accept this quote before converting it to an invoice")
             val profile = database.businessProfileDao().getBusinessProfileOnce()
                 ?: return@withTransaction ConversionResult.Failure("Set up your business before creating an invoice")
             val items = database.lineItemDao().observeLineItems(quoteId, LineItemParentType.QUOTE).firstValue()
@@ -101,7 +104,8 @@ class WorkflowRepository(private val database: AppDatabase) {
             database.invoiceDao().insertInvoice(invoice)
             database.lineItemDao().insertLineItems(items.map { it.copy(id = UUID.randomUUID().toString(), parentId = invoice.id, parentType = LineItemParentType.INVOICE, createdAt = now, updatedAt = now) })
             database.businessProfileDao().updateBusinessProfile(profile.copy(nextInvoiceNumber = profile.nextInvoiceNumber + 1, updatedAt = now))
-            database.quoteDao().updateQuote(quote.copy(status = "CONVERTED_TO_INVOICE", updatedAt = now))
+            database.quoteDao().updateQuote(quote.copy(status = QuoteStatus.CONVERTED_TO_INVOICE, convertedInvoiceId = invoice.id, updatedAt = now))
+            database.documentActivityDao().insert(DocumentActivityEntity(documentId = quote.id, documentType = "QUOTE", eventType = "CONVERTED", relatedDocumentId = invoice.id, createdAt = now))
             ConversionResult.Created(invoice)
         }
     } catch (error: Exception) {

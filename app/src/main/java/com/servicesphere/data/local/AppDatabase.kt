@@ -13,9 +13,10 @@ import androidx.room.RoomDatabase
         LineItemEntity::class,
         JobPhotoEntity::class,
         SignatureEntity::class,
-        JobReminderEntity::class
+        JobReminderEntity::class,
+        DocumentActivityEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -28,4 +29,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun lineItemDao(): LineItemDao
     abstract fun jobPhotoDao(): JobPhotoDao
     abstract fun signatureDao(): SignatureDao
+    abstract fun documentActivityDao(): DocumentActivityDao
 }

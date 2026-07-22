@@ -13,6 +13,8 @@ import com.servicesphere.analytics.AnalyticsTracker
 import com.servicesphere.data.repository.LineItemRepository
 import com.servicesphere.data.repository.QuoteRepository
 import com.servicesphere.domain.model.LineItemParentType
+import com.servicesphere.domain.model.QuoteStatus
+import com.servicesphere.documents.DocumentLifecycleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +51,8 @@ class QuoteDetailViewModel(
     jobRepository: JobRepository,
     invoiceRepository: InvoiceRepository,
     private val workflowRepository: WorkflowRepository,
-    private val analyticsTracker: AnalyticsTracker
+    private val analyticsTracker: AnalyticsTracker,
+    private val documentLifecycleRepository: DocumentLifecycleRepository
 ) : ViewModel() {
     private val errorMessage = MutableStateFlow<String?>(null)
     private val deleteSuccess = MutableStateFlow(false)
@@ -90,10 +93,16 @@ class QuoteDetailViewModel(
 
     fun updateStatus(status: String) {
         viewModelScope.launch {
-            runCatching {
+            val result = when (status) {
+                QuoteStatus.SENT -> documentLifecycleRepository.markQuoteSent(quoteId)
+                QuoteStatus.ACCEPTED -> documentLifecycleRepository.acceptQuote(quoteId)
+                QuoteStatus.REJECTED -> documentLifecycleRepository.declineQuote(quoteId)
+                else -> runCatching {
                 val quote = quoteRepository.getQuoteByIdOnce(quoteId) ?: return@runCatching
                 quoteRepository.updateQuote(quote.copy(status = status, updatedAt = System.currentTimeMillis()))
-            }.onFailure { error -> errorMessage.value = error.message ?: "Unable to update quote status" }
+                }
+            }
+            result.onFailure { error -> errorMessage.value = error.message ?: "Unable to update quote status" }
         }
     }
 
@@ -135,11 +144,12 @@ class QuoteDetailViewModel(
         private val jobRepository: JobRepository,
         private val invoiceRepository: InvoiceRepository,
         private val workflowRepository: WorkflowRepository,
-        private val analyticsTracker: AnalyticsTracker
+        private val analyticsTracker: AnalyticsTracker,
+        private val documentLifecycleRepository: DocumentLifecycleRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            QuoteDetailViewModel(quoteId, quoteRepository, lineItemRepository, clientRepository, jobRepository, invoiceRepository, workflowRepository, analyticsTracker) as T
+            QuoteDetailViewModel(quoteId, quoteRepository, lineItemRepository, clientRepository, jobRepository, invoiceRepository, workflowRepository, analyticsTracker, documentLifecycleRepository) as T
     }
 }
 

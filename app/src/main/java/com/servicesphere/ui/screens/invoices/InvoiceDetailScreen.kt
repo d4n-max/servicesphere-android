@@ -70,7 +70,8 @@ fun InvoiceDetailScreen(
             ServiceLocator.lineItemRepository,
             ServiceLocator.clientRepository,
             ServiceLocator.jobRepository,
-            ServiceLocator.quoteRepository
+            ServiceLocator.quoteRepository,
+            ServiceLocator.documentLifecycleRepository
         )
     ),
     pdfViewModel: InvoicePdfActionViewModel = viewModel(
@@ -88,7 +89,9 @@ fun InvoiceDetailScreen(
             ),
             PdfShareManager(LocalContext.current.applicationContext),
             ServiceLocator.featureGateManager,
-            ServiceLocator.activationTracker
+            ServiceLocator.activationTracker,
+            ServiceLocator.documentLifecycleRepository,
+            ServiceLocator.invoiceRepository
         )
     )
 ) {

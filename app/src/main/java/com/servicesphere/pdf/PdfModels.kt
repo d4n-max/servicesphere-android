@@ -14,6 +14,15 @@ data class PdfResult(
     val errorMessage: String? = null
 )
 
+data class GeneratedDocument(
+    val filePath: String,
+    val fileName: String,
+    val documentType: String,
+    val documentNumber: String,
+    val generatedAt: Long,
+    val pageCount: Int
+)
+
 data class PdfBusinessInfo(
     val businessName: String,
     val ownerName: String?,

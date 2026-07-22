@@ -43,6 +43,7 @@ data class QuoteUiModel(
     val taxAmount: Double,
     val total: Double,
     val notes: String?,
+    val pdfPath: String?,
     val createdAt: Long,
     val updatedAt: Long
 ) {
@@ -150,6 +151,7 @@ fun QuoteEntity.toUiModel(client: ClientEntity?, job: JobEntity?): QuoteUiModel 
     taxAmount = taxAmount,
     total = total,
     notes = notes,
+    pdfPath = pdfPath,
     createdAt = createdAt,
     updatedAt = updatedAt
 )

@@ -66,7 +66,8 @@ fun QuoteDetailScreen(
             ServiceLocator.jobRepository,
             ServiceLocator.invoiceRepository,
             ServiceLocator.workflowRepository,
-            ServiceLocator.analyticsTracker
+            ServiceLocator.analyticsTracker,
+            ServiceLocator.documentLifecycleRepository
         )
     ),
     conversionViewModel: ConvertQuoteToInvoiceViewModel = viewModel(
@@ -90,7 +91,9 @@ fun QuoteDetailScreen(
             ),
             PdfShareManager(LocalContext.current.applicationContext),
             ServiceLocator.featureGateManager,
-            ServiceLocator.activationTracker
+            ServiceLocator.activationTracker,
+            ServiceLocator.documentLifecycleRepository,
+            ServiceLocator.quoteRepository
         )
     )
 ) {

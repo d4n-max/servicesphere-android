@@ -16,6 +16,7 @@ import com.servicesphere.domain.model.InvoiceStatus
 import com.servicesphere.domain.model.LineItemParentType
 import com.servicesphere.domain.model.PaymentMethod
 import com.servicesphere.domain.model.QuoteStatus
+import com.servicesphere.documents.DocumentLifecycleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -56,7 +57,8 @@ class InvoiceDetailViewModel(
     private val lineItemRepository: LineItemRepository,
     clientRepository: ClientRepository,
     jobRepository: JobRepository,
-    quoteRepository: QuoteRepository
+    quoteRepository: QuoteRepository,
+    private val documentLifecycleRepository: DocumentLifecycleRepository
 ) : ViewModel() {
     private val errorMessage = MutableStateFlow<String?>(null)
     private val deleteSuccess = MutableStateFlow(false)
@@ -94,7 +96,11 @@ class InvoiceDetailViewModel(
 
     fun updateStatus(status: String, paymentMethod: String? = null) {
         viewModelScope.launch {
-            runCatching {
+            val result = when (status) {
+                InvoiceStatus.SENT -> documentLifecycleRepository.markInvoiceSent(invoiceId)
+                InvoiceStatus.PAID -> documentLifecycleRepository.markInvoicePaid(invoiceId)
+                InvoiceStatus.CANCELLED -> documentLifecycleRepository.voidInvoice(invoiceId)
+                else -> runCatching {
                 val now = System.currentTimeMillis()
                 val invoice = invoiceRepository.getInvoiceByIdOnce(invoiceId) ?: return@runCatching
                 invoiceRepository.updateInvoice(
@@ -105,17 +111,15 @@ class InvoiceDetailViewModel(
                         updatedAt = now
                     )
                 )
-            }.onFailure { error -> errorMessage.value = error.message ?: "Unable to update invoice status" }
+                }
+            }
+            result.onFailure { error -> errorMessage.value = error.message ?: "Unable to update invoice status" }
         }
     }
 
     fun markPaid(paymentMethod: String) {
         viewModelScope.launch {
-            runCatching {
-                val now = System.currentTimeMillis()
-                val invoice = invoiceRepository.getInvoiceByIdOnce(invoiceId) ?: return@runCatching
-                invoiceRepository.updateInvoice(invoice.copy(status = InvoiceStatus.PAID, paidDate = now, paymentMethod = paymentMethod, updatedAt = now))
-            }.onFailure { error -> errorMessage.value = error.message ?: "Unable to mark invoice paid" }
+            documentLifecycleRepository.markInvoicePaid(invoiceId).onFailure { error -> errorMessage.value = error.message ?: "Unable to mark invoice paid" }
         }
     }
 
@@ -139,11 +143,12 @@ class InvoiceDetailViewModel(
         private val lineItemRepository: LineItemRepository,
         private val clientRepository: ClientRepository,
         private val jobRepository: JobRepository,
-        private val quoteRepository: QuoteRepository
+        private val quoteRepository: QuoteRepository,
+        private val documentLifecycleRepository: DocumentLifecycleRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            InvoiceDetailViewModel(invoiceId, invoiceRepository, lineItemRepository, clientRepository, jobRepository, quoteRepository) as T
+            InvoiceDetailViewModel(invoiceId, invoiceRepository, lineItemRepository, clientRepository, jobRepository, quoteRepository, documentLifecycleRepository) as T
     }
 }
 

@@ -49,6 +49,7 @@ data class InvoiceUiModel(
     val taxAmount: Double,
     val total: Double,
     val notes: String?,
+    val pdfPath: String?,
     val createdAt: Long,
     val updatedAt: Long
 ) {
@@ -183,6 +184,7 @@ fun InvoiceEntity.toUiModel(client: ClientEntity?, job: JobEntity?, quote: Quote
     taxAmount = taxAmount,
     total = total,
     notes = notes,
+    pdfPath = pdfPath,
     createdAt = createdAt,
     updatedAt = updatedAt
 )

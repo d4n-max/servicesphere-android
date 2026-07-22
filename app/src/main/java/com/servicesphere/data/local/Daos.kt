@@ -363,3 +363,15 @@ interface SignatureDao {
     @Query("DELETE FROM signatures")
     suspend fun deleteAll()
 }
+
+@Dao
+interface DocumentActivityDao {
+    @Query("SELECT * FROM document_activity WHERE documentId = :documentId AND documentType = :documentType ORDER BY createdAt DESC")
+    fun observeForDocument(documentId: String, documentType: String): Flow<List<DocumentActivityEntity>>
+
+    @Query("SELECT * FROM document_activity WHERE documentId = :documentId AND documentType = :documentType AND eventType = :eventType LIMIT 1")
+    suspend fun findEvent(documentId: String, documentType: String, eventType: String): DocumentActivityEntity?
+
+    @Insert
+    suspend fun insert(event: DocumentActivityEntity)
+}

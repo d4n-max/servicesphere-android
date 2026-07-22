@@ -100,3 +100,12 @@ Last updated: 2026-06-18
 - [ ] Long client/job/invoice names truncate or wrap cleanly.
 - [ ] Light theme contrast is readable.
 - [ ] Dark mode prepared screens do not use unreadable hardcoded colors.
+# Professional documents
+
+- [ ] Create a quote with Cedar & Stone Services, Ben Carter, EUR, five line items, tax, discount, long notes, and an expiry date.
+- [ ] Generate the real PDF, inspect each rendered page, and confirm its totals match the document screen.
+- [ ] Verify a missing/corrupt logo or signature does not prevent generation and does not show an empty label.
+- [ ] Share through the Android chooser; return and explicitly mark the document sent. Opening the chooser must not mark it sent.
+- [ ] Accept the quote, convert it once, then verify the linked invoice opens and a second conversion opens the existing invoice.
+- [ ] Set an unpaid invoice due date in the past and confirm Overdue is displayed without replacing its stored status; mark it paid, restart, and verify the status and activity persist.
+- [ ] Edit a document, regenerate its PDF, and verify the stored local PDF is replaced rather than accumulating versions.
