@@ -10,12 +10,6 @@ ServiceSphere is a native Android app for service professionals who need a pract
 
 The primary audience is a solo tradesperson, technician, contractor, handyman, or small service business. The product is intentionally useful without an account or network connection: core records are stored locally, while cloud account, backup, and sync capabilities are optional.
 
-## Screenshots
-
-No verified runtime screenshots are currently tracked in `docs/screenshots/`. The existing files in `design/stitch/` are design exports, so this README deliberately does not present them as shipped-app captures. The verified Google Play listing above contains the current public store screenshots.
-
-When adding repository screenshots, place privacy-safe captures made from the running app in `docs/screenshots/` and link them here. Do not use customer data in those captures.
-
 ## Key Features
 
 - Client, job, quote, and invoice creation, editing, and linked record navigation.
